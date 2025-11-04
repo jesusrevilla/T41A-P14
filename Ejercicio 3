@@ -1,0 +1,24 @@
+CREATE OR REPLACE PROCEDURE obtener_productos_rango(
+    IN p_min NUMERIC,
+    IN p_max NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    prod RECORD;
+BEGIN
+    IF p_min > p_max THEN
+        RAISE NOTICE 'El rango de precios no es válido.';
+        RETURN;
+    END IF;
+
+    FOR prod IN
+        SELECT id, nombre, precio
+        FROM productos
+        WHERE precio BETWEEN p_min AND p_max
+    LOOP
+        RAISE NOTICE '🛒 ID: %, Nombre: %, Precio: %', prod.id, prod.nombre, prod.precio;
+    END LOOP;
+END;
+$$;
+
