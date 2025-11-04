@@ -52,4 +52,16 @@ jobs:
       run: |
         echo "Creating stored procedures..."
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f PROCEDURE_1.sql
-        PGPASSWORD=postgres psql -h localho
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f PROCEDURE_2.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f PROCEDURE_3.sql
+       PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f PROCEDURE_4.sql
+       
+    - name: Verify database setup
+      run: |
+        echo "Tables and procedures loaded:"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "\dt"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "\df"
+
+    - name: Run Python tests
+      run: |
+        pytest -v --maxfail=1 --disable-warnings
