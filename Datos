@@ -5,3 +5,5 @@ INSERT INTO productos (nombre, precio) VALUES
 ('Laptop', 15000.00),
 ('USB', 99.99),
 ('Impresora', 3500.00);
+
+
