@@ -1,11 +1,15 @@
--- Tabla principal de productos
+-- Eliminamos tablas si ya existen (opcional)
+DROP TABLE IF EXISTS auditoria_productos;
+DROP TABLE IF EXISTS productos;
+
+-- Creamos la tabla principal de productos
 CREATE TABLE productos (
     id SERIAL PRIMARY KEY,
     nombre TEXT NOT NULL,
     precio NUMERIC(10,2) NOT NULL
 );
 
--- Tabla para registrar auditorías de cambios
+-- Creamos la tabla de auditoría
 CREATE TABLE auditoria_productos (
     id SERIAL PRIMARY KEY,
     id_producto INT NOT NULL,
@@ -14,3 +18,4 @@ CREATE TABLE auditoria_productos (
     fecha TIMESTAMP DEFAULT NOW(),
     FOREIGN KEY (id_producto) REFERENCES productos(id)
 );
+
