@@ -87,20 +87,43 @@ def test_rango_precio_notice(db_connection):
     assert any("Impresora" in n for n in notices)
     assert not any("Laptop" in n for n in notices)
 
+  def test_actualizar_precio(db_connection):
+    cur = db_connection.cursor()
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS productos (
+        id SERIAL PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        precio NUMERIC NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS auditoria_productos (
+        id SERIAL PRIMARY KEY,
+        producto_id INT NOT NULL,
+        precio_anterior NUMERIC,
+        precio_nuevo NUMERIC
+    );
+    """)
+
+    cur.execute("DELETE FROM productos;")
+    cur.execute("DELETE FROM auditoria_productos;")
+
+    cur.execute("INSERT INTO productos (nombre, precio) VALUES ('Laptop', 1000) RETURNING id;")
+    pid = cur.fetchone()[0]
+
+    run_script(db_connection, "PROCEDURE_4.sql") 
+
+    cur.execute("CALL actualizar_precio(%s, %s);", (pid, 1200))
+    db_connection.commit()
+
+    cur.execute("SELECT precio FROM productos WHERE id = %s;", (pid,))
+    nuevo_precio = cur.fetchone()[0]
+    assert nuevo_precio == 1200, "❌ El precio no fue actualizado correctamente."
+
+    cur.execute("""
+        SELECT precio_anterior, precio_nuevo
+        FROM auditoria_productos
+        WHERE producto_id = %s;
+    """, (pid,))
+    auditoria = cur.fetchone()
+    assert auditoria == (1000, 1200), f"Auditoría incorrecta: {auditoria}"
+
     cur.close()
-# ----------------------------------------------------------------------
-# TEST 4 - Auditoría
-# ----------------------------------------------------------------------
-'''
-def test_registrar_auditoria(db_connection):
-    """
-    Verifica que se inserta un registro en la tabla de auditoría al actualizar un producto.
-    """
-    conn = db_connection
-    run_query_from_file(conn, "04_registrar_auditoria.sql")
-
-    with conn.cursor() as cur:
-        cur.execute("SELECT COUNT(*) FROM auditoria;")
-        count = cur.fetchone()[0]
-    assert count > 0'''
-
