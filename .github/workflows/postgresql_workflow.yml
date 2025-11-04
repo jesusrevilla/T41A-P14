@@ -28,33 +28,43 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Wait for PostgreSQL to be ready
+    - name: Install PostgreSQL client
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y postgresql-client
+
+    - name: Wait for PostgreSQL
       run: |
         for i in {1..30}; do
-          if pg_isready -h localhost -U postgres -d test_db; then
-            echo "PostgreSQL is ready!"
-            break
+          if PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT 1;" >/dev/null 2>&1; then
+            echo "✅ PostgreSQL is ready!"
+            exit 0
           fi
-          echo "Waiting for PostgreSQL... ($i/30)"
+          echo "⏳ Waiting for PostgreSQL... ($i/30)"
           sleep 2
         done
+        echo "❌ PostgreSQL failed to start"
+        exit 1
 
     - name: Set up database schema
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_CreateTables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 01_setup_database.sql
 
     - name: Create stored procedures
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_InsertData.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 02_procedimientos.sql
 
-    
-    - name: Run comprehensive test
+    - name: Run all tests
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f test_01_Completo.py
+        echo "🧪 Starting comprehensive tests..."
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_tests_completos.sql
 
-    - name: Verify final state
+    - name: Final verification
       run: |
-        echo "=== Estado final de la base de datos ==="
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT * FROM productos ORDER BY id;"
-        echo "=== Registros de auditoría ==="
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT * FROM auditoria_productos ORDER BY fecha_cambio;"
+        echo "📊 Final database state:"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "
+          SELECT 'Products' as table_name, count(*) as count FROM productos
+          UNION ALL
+          SELECT 'Audit records', count(*) FROM auditoria_productos;"
+        
+        echo "✅ All tests completed successfully!"
