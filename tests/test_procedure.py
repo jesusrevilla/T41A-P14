@@ -14,12 +14,12 @@ def test_procedure_delete():
     #uso de select para tomar los notices
     cur.execute("SELECT 1;")
     #llamada correcta
-    cur.execute("CALL eliminar_producto(2);")
+    cur.execute("CALL eliminar_producto(3);")
     cur.execute("SELECT 1;")
     mensajes=conn.notices
     assert 'id incorrecto' in mensajes[0]
     assert 'eliminado correctamente' in mensajes[1]
-    cur.execute("SELECT COUNT(*) FROM productos WHERE id=2;")
+    cur.execute("SELECT COUNT(*) FROM productos WHERE id=3;")
     count = cur.fetchone()[0]
     assert count == 0
     cur.close()
@@ -75,7 +75,7 @@ def test_procedure_auditoria():
     cur = conn.cursor()
     cur.execute("select count(*) as total from auditoria;");
     auditoriaAnt=cur.fetchone()[0];
-    cur.execute("update productos set precio=15.0 where id=1;");
+    cur.execute("update productos set precio=15.0 where id=2;");
     cur.execute("select count(*) as total from auditoria;");
     auditoriaAct=cur.fetchone()[0];
     assert auditoriaAct-auditoriaAnt==1;
