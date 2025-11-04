@@ -1,0 +1,7 @@
+INSERT INTO productos (nombre, precio) VALUES
+('Teclado', 299.99),
+('Mouse', 199.99),
+('Monitor', 2500.00),
+('Laptop', 15000.00),
+('USB', 99.99),
+('Impresora', 3500.00);
