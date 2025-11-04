@@ -31,7 +31,6 @@ def run_script(conn, sql_file):
         return result
 
 def test_eliminar_producto(db_connection):
-    # Inserta un producto para eliminarlo
     with db_connection.cursor() as cur:
         cur.execute("INSERT INTO productos(nombre, precio) VALUES ('Borrame', 99.9) RETURNING id;")
         pid = cur.fetchone()[0]
@@ -39,14 +38,12 @@ def test_eliminar_producto(db_connection):
 
     result = run_script(db_connection, "PROCEDURE_1.sql")
 
-    # Asegura que el producto fue eliminado
     with db_connection.cursor() as cur:
         cur.execute("SELECT COUNT(*) FROM productos WHERE id = %s;", (pid,))
         count = cur.fetchone()[0]
     assert count == 0, f"El producto con id {pid} no fue eliminado correctamente"
 
 def test_porcentaje_precio(db_connection):
-    # Crea productos de prueba
     with db_connection.cursor() as cur:
         cur.execute("DELETE FROM productos;")
         cur.execute("INSERT INTO productos(nombre, precio) VALUES ('Mouse', 100), ('Teclado', 200);")
@@ -54,7 +51,6 @@ def test_porcentaje_precio(db_connection):
 
     result = run_script(db_connection, "PROCEDURE_2.sql")
 
-    # Verifica que los precios aumentaron un 10%
     with db_connection.cursor() as cur:
         cur.execute("SELECT nombre, precio FROM productos ORDER BY nombre;")
         data = cur.fetchall()
@@ -62,20 +58,36 @@ def test_porcentaje_precio(db_connection):
     
     assert round(precios["Mouse"], 1) == 110.0
     assert round(precios["Teclado"], 1) == 220.0
+    
+def test_rango_precio_notice(db_connection):
+    run_script(db_connection, "PROCEDURE_3.sql") 
 
-# ----------------------------------------------------------------------
-# TEST 3 - Productos en rango de precios
-# ----------------------------------------------------------------------
-'''
-def test_productos_en_rango(db_connection):
-    """
-    Verifica que el procedimiento devuelve productos dentro del rango especificado.
-    """
-    result = run_query_from_file(db_connection, "03_productos_en_rango.sql")
-    assert len(result) > 0
-    for row in result:
-        assert 100 <= row[1] <= 1000  # Suponiendo que el rango es 100 a 1000
-'''
+    cur = db_connection.cursor()
+    cur.execute("DELETE FROM productos;")
+    cur.execute("""
+        INSERT INTO productos (nombre, precio) VALUES
+        ('Monitor', 150.00),
+        ('Teclado', 50.00),
+        ('Mouse', 30.00),
+        ('Impresora', 300.00),
+        ('Laptop', 800.00);
+    """)
+    db_connection.commit()
+    db_connection.notices.clear()
+
+    cur.execute("CALL rango_precio(100, 400);")
+    db_connection.commit()
+
+    notices = db_connection.notices
+
+    for n in notices:
+        print("NOTICE:", n.strip())
+
+    assert any("Monitor" in n for n in notices)
+    assert any("Impresora" in n for n in notices)
+    assert not any("Laptop" in n for n in notices)
+
+    cur.close()
 # ----------------------------------------------------------------------
 # TEST 4 - Auditoría
 # ----------------------------------------------------------------------
