@@ -1,0 +1,55 @@
+name: Run PostgreSQL Procedure Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Wait for PostgreSQL to be ready
+      run: sleep 10
+
+    - name: Initialize database schema
+      run: |
+        echo "Creating tables..."
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f create_table.sql
+
+    - name: Load stored procedures
+      run: |
+        echo "Creating stored procedures..."
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f PROCEDURE_1.sql
+        PGPASSWORD=postgres psql -h localho
