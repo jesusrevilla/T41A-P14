@@ -47,3 +47,42 @@ BEGIN
 
 END;
 $$;
+
+CREATE OR REPLACE PROCEDURE sp_actualizar_producto(
+    p_id INT,
+    p_nuevo_nombre TEXT,
+    p_nuevo_precio NUMERIC
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_anterior RECORD;
+BEGIN
+    SELECT * INTO v_anterior FROM productos WHERE id = p_id;
+
+    IF NOT FOUND THEN
+        RAISE NOTICE 'No se actualizó nada.';
+        RETURN;
+    END IF;
+
+    UPDATE productos
+    SET
+        nombre = p_nuevo_nombre,
+        precio = p_nuevo_precio
+    WHERE id = p_id;
+
+    INSERT INTO productos_auditoria (
+        id_producto,
+        nombre_anterior,
+        precio_anterior,
+        nombre_nuevo,
+        precio_nuevo
+    )
+    VALUES (
+        p_id,
+        v_anterior.nombre,
+        v_anterior.precio,
+        p_nuevo_nombre,
+        p_nuevo_precio 
+    );
+END;
+$$;
