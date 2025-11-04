@@ -2,7 +2,7 @@ import psycopg2
 import pytest
 from pathlib import Path
 
-# Configuración de la base de datos
+# Configura tu base de datos
 DB_CONFIG = {
     "dbname": "test_db",
     "user": "postgres",
@@ -14,68 +14,54 @@ DB_CONFIG = {
 @pytest.fixture(scope="module")
 def db_connection():
     conn = psycopg2.connect(**DB_CONFIG)
+    conn.autocommit = True
     yield conn
     conn.close()
 
-def run_query_from_file(conn, filename):
-    """
-    Ejecuta el contenido de un archivo SQL y devuelve los resultados (si existen).
-    """
-    sql_path = Path(filename)
-    with open(sql_path, "r") as file:
-        query = file.read()
+def run_script(conn, sql_file):
+    sql_path = Path(sql_file)
+    with open(sql_path, "r", encoding="utf-8") as file:
+        script = file.read()
     with conn.cursor() as cur:
-        cur.execute(query)
+        cur.execute(script)
         try:
-            return cur.fetchall()
+            result = cur.fetchall()
         except psycopg2.ProgrammingError:
-            # No hay resultados (por ejemplo en un procedimiento sin SELECT)
-            conn.commit()
-            return []
-
-# ----------------------------------------------------------------------
-# TEST 1 - Eliminar producto
-# ----------------------------------------------------------------------
+            result = []
+        return result
 
 def test_eliminar_producto(db_connection):
-    """
-    Verifica que el procedimiento eliminar_producto elimina correctamente un producto existente.
-    """
-    conn = db_connection
-    # Inserta producto de prueba
-    with conn.cursor() as cur:
-        cur.execute("INSERT INTO productos (nombre, precio) VALUES ('Borrame', 100);")
-        conn.commit()
-    
-    # Ejecuta el procedimiento
-    run_query_from_file(conn, "PROCEDURE_1.sql")
+    # Inserta un producto para eliminarlo
+    with db_connection.cursor() as cur:
+        cur.execute("INSERT INTO productos(nombre, precio) VALUES ('Borrame', 99.9) RETURNING id;")
+        pid = cur.fetchone()[0]
+        db_connection.commit()
 
-    # Verifica que ya no exista
-    with conn.cursor() as cur:
-        cur.execute("SELECT COUNT(*) FROM productos WHERE nombre='Borrame';")
+    result = run_script(db_connection, "01_eliminar_producto.sql")
+
+    # Asegura que el producto fue eliminado
+    with db_connection.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM productos WHERE id = %s;", (pid,))
         count = cur.fetchone()[0]
-    assert count == 0
+    assert count == 0, f"El producto con id {pid} no fue eliminado correctamente"
 
-# ----------------------------------------------------------------------
-# TEST 2 - Aumentar precios
-# ----------------------------------------------------------------------
+def test_porcentaje_precio(db_connection):
+    # Crea productos de prueba
+    with db_connection.cursor() as cur:
+        cur.execute("DELETE FROM productos;")
+        cur.execute("INSERT INTO productos(nombre, precio) VALUES ('Mouse', 100), ('Teclado', 200);")
+        db_connection.commit()
 
-def test_aumentar_precios(db_connection):
-    """
-    Verifica que el procedimiento aumentar_precios aumenta correctamente los precios.
-    """
-    conn = db_connection
-    with conn.cursor() as cur:
-        cur.execute("SELECT AVG(precio) FROM productos;")
-        precio_inicial = cur.fetchone()[0]
+    result = run_script(db_connection, "02_porcentaje_precio.sql")
 
-    run_query_from_file(conn, "PROCEDURE_2.sql")
-
-    with conn.cursor() as cur:
-        cur.execute("SELECT AVG(precio) FROM productos;")
-        precio_final = cur.fetchone()[0]
-
-    assert precio_final > precio_inicial
+    # Verifica que los precios aumentaron un 10%
+    with db_connection.cursor() as cur:
+        cur.execute("SELECT nombre, precio FROM productos ORDER BY nombre;")
+        data = cur.fetchall()
+    precios = {nombre: precio for nombre, precio in data}
+    
+    assert round(precios["Mouse"], 1) == 110.0
+    assert round(precios["Teclado"], 1) == 220.0
 
 # ----------------------------------------------------------------------
 # TEST 3 - Productos en rango de precios
