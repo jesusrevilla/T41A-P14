@@ -1,0 +1,60 @@
+name: Run PostgreSQL Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Wait for PostgreSQL to be ready
+      run: |
+        for i in {1..30}; do
+          if pg_isready -h localhost -U postgres -d test_db; then
+            echo "PostgreSQL is ready!"
+            break
+          fi
+          echo "Waiting for PostgreSQL... ($i/30)"
+          sleep 2
+        done
+
+    - name: Set up database schema
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_CreateTables.sql
+
+    - name: Create stored procedures
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_InsertData.sql
+
+    
+    - name: Run comprehensive test
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f testComp.sql
+
+    - name: Verify final state
+      run: |
+        echo "=== Estado final de la base de datos ==="
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT * FROM productos ORDER BY id;"
+        echo "=== Registros de auditoría ==="
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT * FROM auditoria_productos ORDER BY fecha_cambio;"
