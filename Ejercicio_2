@@ -1,0 +1,28 @@
+-- 2_Crear un procedimiento que recorra todos los productos y aumente su precio en un porcentaje dado.
+CREATE OR REPLACE PROCEDURE aumentar_precio_por_porcentaje(
+    IN p_porcentaje NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Asegurar que el porcentaje sea positivo
+    IF p_porcentaje <= 0 THEN
+        RAISE EXCEPTION 'El porcentaje de aumento debe ser mayor que cero.';
+    END IF;
+
+    BEGIN
+        -- Actualizar todos los productos aplicando el porcentaje
+        -- Fórmula: precio * (1 + (porcentaje / 100))
+        UPDATE productos
+        SET precio = precio * (1 + (p_porcentaje / 100.0));
+
+        -- Informar de filas actualizadas
+        RAISE NOTICE 'Se actualizaron % productos con un aumento del %%.', ROW_COUNT, p_porcentaje;
+
+    EXCEPTION
+        WHEN OTHERS THEN
+            -- Si ocurre un error
+            RAISE EXCEPTION 'Error al actualizar precios: %', SQLERRM;
+    END;
+END;
+$$;
