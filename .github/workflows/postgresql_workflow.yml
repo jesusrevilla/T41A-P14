@@ -50,7 +50,7 @@ jobs:
     
     - name: Run comprehensive test
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f testComp.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f test_01_Completo.py
 
     - name: Verify final state
       run: |
