@@ -37,7 +37,7 @@ def test_eliminar_producto(db_connection):
         pid = cur.fetchone()[0]
         db_connection.commit()
 
-    result = run_script(db_connection, "01_eliminar_producto.sql")
+    result = run_script(db_connection, "PROCEDURE_1.sql")
 
     # Asegura que el producto fue eliminado
     with db_connection.cursor() as cur:
@@ -52,7 +52,7 @@ def test_porcentaje_precio(db_connection):
         cur.execute("INSERT INTO productos(nombre, precio) VALUES ('Mouse', 100), ('Teclado', 200);")
         db_connection.commit()
 
-    result = run_script(db_connection, "02_porcentaje_precio.sql")
+    result = run_script(db_connection, "PROCEDURE_2.sql")
 
     # Verifica que los precios aumentaron un 10%
     with db_connection.cursor() as cur:
