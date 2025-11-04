@@ -48,7 +48,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE PROCEDURE sp_actualizar_producto(
+CREATE OR REPLACE PROCEDURE actualizar_producto(
     p_id INT,
     p_nuevo_nombre TEXT,
     p_nuevo_precio NUMERIC
