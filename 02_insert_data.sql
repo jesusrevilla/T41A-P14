@@ -9,5 +9,5 @@ $$;
 
 CALL insertar_producto('Teclado', 299.99);
 CALL insertar_producto('Raton', 99.99);
-
-select * from productos;
+CALL insertar_producto('Camara', 1099.99);
+--select * from productos;
