@@ -46,18 +46,23 @@ jobs:
         echo "❌ PostgreSQL failed to start"
         exit 1
 
-    - name: Set up database schema
+    - name: create
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 01_setup_database.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 01_CreateTables.sql
 
-    - name: Create stored procedures
+    - name: insert
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 02_procedimientos.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 02_InsertData.sql
+
+    - name: ejercicios
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 03_ejercicios.sql
+
 
     - name: Run all tests
       run: |
         echo "🧪 Starting comprehensive tests..."
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_tests_completos.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f tests/test_01_Completo.py
 
     - name: Final verification
       run: |
