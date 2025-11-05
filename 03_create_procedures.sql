@@ -21,3 +21,23 @@ BEGIN
     UPDATE productos set precio=precio*(1+porcentaje);
 END;
 $$;
+
+CREATE PROCEDURE rango_precio(
+    IN inferior NUMERIC,
+    IN superior NUMERIC,
+    OUT lista TEXT
+    )
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    SELECT COALESCE(
+        STRING_AGG(nombre, '|' ORDER BY nombre), --se agrupan los nombres de los productos
+        'NO_RESULTADOS' -- si no hay resultados
+    )
+    INTO lista
+    FROM productos
+    WHERE precio BETWEEN inferior AND superior;
+END;
+$$;
+
+
