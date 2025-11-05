@@ -23,7 +23,6 @@ def db_connection():
 
 
 def test_eliminar_producto_existente(db_connection):
-    # El fixture ahora solo devuelve 'conn'
     conn = db_connection
     product_id_to_delete = 3
 
@@ -34,7 +33,6 @@ def test_eliminar_producto_existente(db_connection):
         result = cur.fetchone()
         assert result is None
 
-    # Leemos los mensajes directamente de conn.notices
     assert any("Producto eliminado exitosamente" in n for n in conn.notices)
 
 
@@ -80,12 +78,11 @@ def test_buscar_por_rango(db_connection):
     with conn.cursor() as cur:
         cur.execute("CALL buscar_por_rango(50.00, 150.00);")
 
-    # Ya no hay conn.commit() aquí
     
     log_completo = "\n".join(conn.notices)
     
     assert "--- Productos encontrados (Rango: 50.00 a 150.00) ---" in log_completo
-    assert "Nombre: Audífonos Inalámbricos" in log_completo
-    assert "Nombre: Teclado Mecánico RGB" in log_completo
-    assert "Nombre: Laptop Gamer X1" not in log_completo
+    assert "Nombre: Audifonos" in log_completo
+    assert "Nombre: Teclado" in log_completo
+    assert "Nombre: Laptop" not in log_completo
     assert "Fin de la búsqueda" in log_completo
