@@ -12,22 +12,19 @@ DB_CONFIG = {
 
 @pytest.fixture
 def db_connection():
-    notices = []
-    
-    def notice_receiver(notice):
-        notices.append(notice.diag.message_primary)
-
     conn = psycopg2.connect(**DB_CONFIG)
-    conn.add_notice_receiver(notice_receiver)
-    
-    yield conn, notices
-    
+
+    conn.notices.clear()
+
+    yield conn
+
     conn.rollback()
     conn.close()
 
 
 def test_eliminar_producto_existente(db_connection):
-    conn, notices = db_connection
+    # El fixture ahora solo devuelve 'conn'
+    conn = db_connection
     product_id_to_delete = 3
 
     with conn.cursor() as cur:
@@ -37,12 +34,12 @@ def test_eliminar_producto_existente(db_connection):
         result = cur.fetchone()
         assert result is None
 
-    conn.commit()
-    assert any("Producto eliminado exitosamente" in n for n in notices)
+    # Leemos los mensajes directamente de conn.notices
+    assert any("Producto eliminado exitosamente" in n for n in conn.notices)
 
 
 def test_eliminar_producto_no_existente(db_connection):
-    conn, notices = db_connection
+    conn = db_connection
     product_id_to_delete = 9999
 
     with conn.cursor() as cur:
@@ -52,12 +49,11 @@ def test_eliminar_producto_no_existente(db_connection):
         result = cur.fetchone()
         assert result is None
 
-    conn.commit()
-    assert any("No se encontró un producto" in n for n in notices)
+    assert any("No se encontró un producto" in n for n in conn.notices)
 
 
 def test_aumentar_precios(db_connection):
-    conn, notices = db_connection
+    conn = db_connection
     aumento = Decimal('10.00')
     
     with conn.cursor() as cur:
@@ -75,19 +71,18 @@ def test_aumentar_precios(db_connection):
         
         assert nuevo_precio == precio_esperado
 
-    conn.commit()
-    assert any("Precios actualizados. 5 filas afectadas." in n for n in notices)
+    assert any("Precios actualizados. 5 filas afectadas." in n for n in conn.notices)
 
 
 def test_buscar_por_rango(db_connection):
-    conn, notices = db_connection
+    conn = db_connection
     
     with conn.cursor() as cur:
         cur.execute("CALL buscar_por_rango(50.00, 150.00);")
 
-    conn.commit() 
-
-    log_completo = "\n".join(notices)
+    # Ya no hay conn.commit() aquí
+    
+    log_completo = "\n".join(conn.notices)
     
     assert "--- Productos encontrados (Rango: 50.00 a 150.00) ---" in log_completo
     assert "Nombre: Audífonos Inalámbricos" in log_completo
