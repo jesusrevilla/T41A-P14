@@ -124,3 +124,26 @@ def test_actualizar_precio_producto(db_cursor):
     # 100.00 * (1 + 0.10) = 110.00
     assert nuevo_precio == approx(110.00)
 
+# --- Prueba para 'sp_mostrar_productos_por_rango' (El que usa RAISE NOTICE) ---
+
+def test_sp_mostrar_productos_por_rango_no_falla(db_cursor):
+    # 1. ARRANGE
+    db_cursor.execute(
+        """
+        INSERT INTO productos (nombre_producto, precio) VALUES
+        ('Test Rango A', 10.00),
+        ('Test Rango B', 50.00);
+        """
+    )
+    
+    try:
+        # 2. ACT
+        # Llamamos al procedure
+        db_cursor.execute("CALL sp_mostrar_productos_por_rango(%s, %s);", (40.00, 60.00))
+        
+        # 3. ASSERT
+        # Si llegamos aquí sin un error de psycopg2, el procedure "funcionó"
+        assert True
+        
+    except Exception as e:
+        pytest.fail(f"El procedure 'sp_mostrar_productos_por_rango' falló al ejecutarse: {e}")
