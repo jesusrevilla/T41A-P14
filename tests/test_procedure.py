@@ -1,5 +1,31 @@
 import psycopg2
 
+def test_procedure_rango():
+    conn = psycopg2.connect(
+        dbname='test_db',
+        user='postgres',
+        password='postgres',
+        host='localhost',
+        port='5432'
+    )
+    conn.autocommit = False
+    try:
+        cur = conn.cursor()
+        #Se obtienen los registros que devulve el procedure
+        query="CALL rango_precios(%s, %s, %s);"
+        cur.execute(query,(100.00,200.00,None));
+        resultados_cadena=cur.fetchone()[0];
+        resultados=resultados_cadena.split('|')
+        assert len(resultados)==3;
+        conn.commit()
+    except Exception as e:
+        raise e
+    finally:
+        #En caso de cualquier fallo en el try, el finally hará la limpieza.
+        conn.rollback()
+        cur.close()
+        conn.close()
+
 def test_procedure_delete():
     conn = psycopg2.connect(
         dbname='test_db',
@@ -62,32 +88,6 @@ def test_procedure_update():
         #En caso de cualquier fallo en el try, el finally hará la limpieza.
         cur.close()
         conn.rollback()
-        conn.close()
-
-def test_procedure_rango():
-    conn = psycopg2.connect(
-        dbname='test_db',
-        user='postgres',
-        password='postgres',
-        host='localhost',
-        port='5432'
-    )
-    conn.autocommit = False
-    try:
-        cur = conn.cursor()
-        #Se obtienen los registros que devulve el procedure
-        query="CALL rango_precios(%s, %s, %s);"
-        cur.execute(query,(100.00,200.00,None));
-        resultados_cadena=cur.fetchone()[0];
-        resultados=resultados_cadena.split('|')
-        assert len(resultados)==3;
-        conn.commit()
-    except Exception as e:
-        raise e
-    finally:
-        #En caso de cualquier fallo en el try, el finally hará la limpieza.
-        conn.rollback()
-        cur.close()
         conn.close()
 
 
