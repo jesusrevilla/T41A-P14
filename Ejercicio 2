@@ -1,15 +1,12 @@
-CREATE OR REPLACE PROCEDURE aumentar_precios(IN p_porcentaje NUMERIC)
+CREATE OR REPLACE PROCEDURE eliminar_producto(IN p_id INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF p_porcentaje <= 0 THEN
-        RAISE NOTICE 'El porcentaje debe ser mayor que 0.';
-        RETURN;
+    IF EXISTS (SELECT 1 FROM productos WHERE id = p_id) THEN
+        DELETE FROM productos WHERE id = p_id;
+        RAISE NOTICE 'Producto con ID % eliminado exitosamente.', p_id;
+    ELSE
+        RAISE NOTICE 'No existe producto con ID %.', p_id;
     END IF;
-
-    UPDATE productos
-    SET precio = precio + (precio * p_porcentaje / 100);
-
-    RAISE NOTICE 'Se han aumentado los precios en un %.', p_porcentaje;
 END;
 $$;
