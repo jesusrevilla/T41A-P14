@@ -17,7 +17,7 @@ $$;
 
 
 
-CREATE OR REPLACE PROCEDURE aumentar_precios(
+CREATE PROCEDURE aumentar_precios(
     p_porcentaje DECIMAL(5, 2)
 )
 LANGUAGE plpgsql
@@ -39,7 +39,7 @@ END;
 $$;
 
 
-CREATE OR REPLACE PROCEDURE buscar_por_rango(
+CREATE PROCEDURE buscar_por_rango(
     p_minimo DECIMAL(10, 2),
     p_maximo DECIMAL(10, 2)
 )
