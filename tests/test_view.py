@@ -1,8 +1,9 @@
 import psycopg2
 import pytest
+from pathlib import Path
 
 DB_CONFIG = {
-    "dbname": "test_db",    
+    "dbname": "test_db",
     "user": "postgres",
     "password": "postgres",
     "host": "localhost",
@@ -11,27 +12,20 @@ DB_CONFIG = {
 
 @pytest.fixture(scope="module")
 def db_connection():
-    """Conexión a la base de datos"""
     conn = psycopg2.connect(**DB_CONFIG)
-    conn.autocommit = True
     yield conn
     conn.close()
 
-@pytest.fixture(autouse=True)
-def reset_data(db_connection):
-    """Reinicia los datos antes de cada test"""
-    with db_connection.cursor() as cur:
-        cur.execute("DELETE FROM auditoria_productos;")
-        cur.execute("DELETE FROM productos;")
-        cur.execute("""
-            INSERT INTO productos (nombre, precio) VALUES
-            ('Teclado', 100.00),
-            ('Mouse', 50.00),
-            ('Monitor', 600.00),
-            ('Laptop', 1500.00),
-            ('Auriculares', 80.00);
-        """)
-    yield
+def run_query_from_file(conn, filename):
+    sql_path = Path("sql") / filename  
+    with open(sql_path, "r") as file:
+        query = file.read()
+    with conn.cursor() as cur:
+        cur.execute(query)
+        try:
+            return cur.fetchall()
+        except psycopg2.ProgrammingError:
+            return []
 
 def test_eliminar_producto(db_connection):
     with db_connection.cursor() as cur:
