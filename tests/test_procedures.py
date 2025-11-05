@@ -1,14 +1,18 @@
 import pytest
 import psycopg2
 import os
-from dotenv import load_dotenv
 from pytest import approx # Para comparar números decimales
 
 
 # --- Fixture de Base de Datos (con Rollback) ---
 # Esta es la parte clave para probar procedimientos de escritura
-
-load_dotenv()
+DB_CONFIG = {
+    "dbname": "test_db",
+    "user": "postgres",
+    "password": "postgres",
+    "host": "localhost",
+    "port": 5432
+}
 
 @pytest.fixture(scope="function")
 def db_cursor():
@@ -25,13 +29,7 @@ def db_cursor():
     cursor = None
     try:
         # Leemos las credenciales del .env (gracias a load_dotenv)
-        conn = psycopg2.connect(
-            dbname=os.environ.get("DB_NAME"),
-            user=os.environ.get("DB_USER"),
-            password=os.environ.get("DB_PASS"),
-            host=os.environ.get("DB_HOST"),
-            port=os.environ.get("DB_PORT", 5432)
-        )
+        conn = psycopg2.connect(**DB_CONFIG)
         
         # Desactivamos autocommit para controlar la transacción
         conn.autocommit = False 
