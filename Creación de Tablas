@@ -1,0 +1,20 @@
+-- Eliminamos tablas si ya existen (opcional)
+DROP TABLE IF EXISTS auditoria_productos;
+DROP TABLE IF EXISTS productos;
+
+-- Creamos la tabla principal de productos
+CREATE TABLE productos (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    precio NUMERIC(10,2) NOT NULL
+);
+
+-- Creamos la tabla de auditoría
+CREATE TABLE auditoria_productos (
+    id SERIAL PRIMARY KEY,
+    id_producto INT NOT NULL,
+    precio_anterior NUMERIC(10,2),
+    precio_nuevo NUMERIC(10,2),
+    fecha TIMESTAMP DEFAULT NOW(),
+    FOREIGN KEY (id_producto) REFERENCES productos(id)
+);
