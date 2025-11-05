@@ -1,0 +1,34 @@
+-- 3_Crear una FUNCIÓN que reciba un rango de precios y devuelva los productos dentro de ese rango.
+-- Para devolver un conjunto de resultados, se utiliza una FUNCIÓN y no un PROCEDURE.
+CREATE OR REPLACE FUNCTION obtener_productos_por_rango(
+    p_precio_min NUMERIC,
+    p_precio_max NUMERIC
+)
+RETURNS TABLE (
+    id INT,
+    nombre TEXT,
+    precio NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Validar que el rango sea válido
+    IF p_precio_min IS NULL OR p_precio_max IS NULL OR p_precio_min > p_precio_max OR p_precio_min < 0 THEN
+        RAISE EXCEPTION 'Rango de precios inválido. Asegúrese de que min >= 0 y min <= max.';
+    END IF;
+
+    -- Devolver las filas que cumplen la condición del rango
+    RETURN QUERY
+    SELECT
+        pr.id,
+        pr.nombre,
+        pr.precio
+    FROM
+        productos pr
+    WHERE
+        pr.precio BETWEEN p_precio_min AND p_precio_max
+    ORDER BY
+        pr.precio;
+
+END;
+$$;
