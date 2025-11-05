@@ -55,7 +55,7 @@ def test_procedure_update():
         resultadoAct=cur.fetchone()[0];
         #comparacion
         porcentaje_cambio = (resultadoAct - resultadoAnt) / resultadoAnt
-        assert abs(porcentaje_cambio - 0.15) < 0.0001
+        assert abs(float(porcentaje_cambio) - 0.15) < 0.0001
     except Exception as e:
         raise e
     finally:
