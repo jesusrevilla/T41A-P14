@@ -9,31 +9,23 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2 
+      uses: actions/checkout@v2
 
     - name: Get Open Pull Requests
       id: get-prs
       env:
-
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        # Obtiene los PRs abiertos en formato JSON
-        # pidiendo el número, la rama, el autor y el estado de los checks
         prs=$(gh pr list --state open --json number,headRefName,author,statusCheckRollup)
-        
-        # Guarda el JSON en un archivo (opcional, pero buena práctica)
         echo "$prs" > prs.json
         
         echo "Open Pull Requests:"
-        
-        # Procesa el archivo JSON con 'jq' y lo recorre con un bucle 'while'
         cat prs.json | jq -c '.[]' | while read pr; do
           number=$(echo "$pr" | jq -r '.number')
           branch=$(echo "$pr" | jq -r '.headRefName')
           user=$(echo "$pr" | jq -r '.author.login')
-          status=$(echo "$pr" | jq -r '.statusCheckRollup[0].conclusion') # Dejando el [0] como en tu ejemplo
+          status=$(echo "$pr" | jq -r '.statusCheckRollup[0].conclusion')
           
-          # Imprime la información en la consola de la Acción
           echo "Pull Request Number: $number"
           echo "Branch: $branch"
           echo "User: $user"
