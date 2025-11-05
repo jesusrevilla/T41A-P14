@@ -56,7 +56,11 @@ jobs:
 
     - name: Actualizar porcentaje de precio
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_segundo_ejercicio.sql  
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_segundo_ejercicio.sql
+
+    - name: Obtener rango de precios
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_tercer_ejercicio.sql 
         
     - name: Run tests
       run: |
