@@ -82,7 +82,7 @@ def test_procedure_rango():
         resultados=resultados_cadena.split('|')
         assert len(resultados)==3;
         conn.commit()
-     except Exception as e:
+    except Exception as e:
         raise e
     finally:
         #En caso de cualquier fallo en el try, el finally hará la limpieza.
