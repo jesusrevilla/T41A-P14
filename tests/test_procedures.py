@@ -109,11 +109,11 @@ def test_actualizar_precio_producto(db_cursor):
     # Llamamos al procedure para aumentar el precio en 10% (0.10)
     # Tu procedure suma 1 + 0.10
     porcentaje_aumento = 0.10 
-    db_cursor.execute("CALL actualizar_precio_por_porcentaje(%s, %s);", (producto_id_prueba, porcentaje_aumento))
+    db_cursor.execute("CALL actualizar_precio_por_porcentaje(%s);", (porcentaje_aumento))
 
     # 3. ASSERT
     # Verificamos que el nuevo precio sea 110.00
-    db_cursor.execute("SELECT precio FROM productos WHERE id = %s;", (producto_id_prueba,))
+    db_cursor.execute("SELECT precio FROM productos WHERE id = %s;", (producto_id_prueba))
     
     # fetchone() devuelve una tupla, ej. (Decimal('110.00'),)
     nuevo_precio = db_cursor.fetchone()[0] 
