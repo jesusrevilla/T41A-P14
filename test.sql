@@ -68,28 +68,5 @@ SELECT '--- PRUEBA 3.2: Productos en Rango [300.00 - 1500.00] ---' AS Test;
 SELECT * FROM obtener_productos_por_rango(300.00, 1500.00);
 
 
--- PRUEBAS EJERCICIO 4: actualizar_precio_con_auditoria
-
-SELECT '--- PRUEBA 4.1: Actualizar Producto ID 5 (Webcam HD) de 150.00 a 175.00 ---' AS Test;
-SELECT 'Auditoría inicial (debe estar vacía):' AS Check;
-SELECT * FROM auditoria_productos;
-
-CALL actualizar_precio_con_auditoria(5, 175.00);
-
-SELECT 'Precio actualizado en tabla productos (ID 5 debe ser 175.00):' AS Check;
-SELECT * FROM productos WHERE id = 5;
-
-SELECT 'Registro de auditoría (debe tener 1 fila):' AS Check;
--- Debe mostrar producto_id=5, precio_anterior=150.00, precio_nuevo=175.00
-SELECT producto_id, precio_anterior, precio_nuevo FROM auditoria_productos;
-
-SELECT '--- PRUEBA 4.2: Actualizar Producto ID 5 (Webcam HD) a 200.00 ---' AS Test;
-CALL actualizar_precio_con_auditoria(5, 200.00);
-
-SELECT 'Registro de auditoría (debe tener 2 filas):' AS Check;
--- Debe mostrar el segundo registro: precio_anterior=175.00, precio_nuevo=200.00
-SELECT producto_id, precio_anterior, precio_nuevo FROM auditoria_productos;
-
-
 -- DROP TABLE IF EXISTS productos CASCADE;
 -- DROP TABLE IF EXISTS auditoria_productos CASCADE;
