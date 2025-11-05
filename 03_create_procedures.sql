@@ -22,7 +22,7 @@ BEGIN
 END;
 $$;
 
-CREATE PROCEDURE rango_precio(
+CREATE PROCEDURE rango_precios(
     IN inferior NUMERIC,
     IN superior NUMERIC,
     OUT lista TEXT
