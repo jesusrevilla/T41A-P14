@@ -1,7 +1,4 @@
-CREATE PROCEDURE eliminar_producto(
-    IN p_id INT,
-    OUT p_mensaje TEXT
-)
+CREATE OR REPLACE PROCEDURE eliminar_producto(IN p_id INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
@@ -9,11 +6,12 @@ BEGIN
     WHERE id = p_id;
 
     IF FOUND THEN
-        p_mensaje := format('Producto eliminado correctamente.');
+        RAISE NOTICE '✅ Producto con ID % eliminado correctamente.', p_id;
     ELSE
-        p_mensaje := format('No se encontro el producto');
+        RAISE NOTICE '⚠️ No se encontró un producto con ID %.', p_id;
     END IF;
 END;
 $$;
 
-CALL eliminar_producto(3, NULL);
+
+CALL eliminar_producto(3);
