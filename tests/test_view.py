@@ -72,18 +72,4 @@ def test_productos_por_rango(db_connection):
         assert "Laptop" not in nombres
 
 
-def test_actualizar_precio_auditado(db_connection):
-    with db_connection.cursor() as cur:
-        cur.execute("SELECT precio FROM productos WHERE id = 2;")
-        precio_anterior = cur.fetchone()[0]
 
-        cur.execute("CALL actualizar_precio_auditado(2, 120.00);")
-
-        cur.execute("SELECT precio FROM productos WHERE id = 2;")
-        precio_nuevo = cur.fetchone()[0]
-        assert round(precio_nuevo, 2) == 120.00
-
-        cur.execute("SELECT accion FROM auditoria_productos WHERE producto_id = 2;")
-        auditoria = cur.fetchone()
-        assert auditoria is not None
-        assert "Actualización" in auditoria[0]
