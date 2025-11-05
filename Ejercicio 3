@@ -1,23 +1,15 @@
-CREATE OR REPLACE PROCEDURE obtener_productos_rango(
-    IN p_min NUMERIC,
-    IN p_max NUMERIC
-)
+CREATE OR REPLACE PROCEDURE aumentar_precios(IN porcentaje NUMERIC)
 LANGUAGE plpgsql
 AS $$
-DECLARE
-    prod RECORD;
 BEGIN
-    IF p_min > p_max THEN
-        RAISE NOTICE 'El rango de precios no es válido.';
+    IF porcentaje <= 0 THEN
+        RAISE NOTICE 'El porcentaje debe ser mayor que cero.';
         RETURN;
     END IF;
 
-    FOR prod IN
-        SELECT id, nombre, precio
-        FROM productos
-        WHERE precio BETWEEN p_min AND p_max
-    LOOP
-        RAISE NOTICE '🛒 ID: %, Nombre: %, Precio: %', prod.id, prod.nombre, prod.precio;
-    END LOOP;
+    UPDATE productos
+    SET precio = precio + (precio * porcentaje / 100);
+
+    RAISE NOTICE 'Precios aumentados en % %', porcentaje, '%';
 END;
 $$;
