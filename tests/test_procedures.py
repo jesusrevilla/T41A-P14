@@ -57,7 +57,7 @@ def test_eliminar_producto_exitoso(db_cursor):
     
     # 1. ARRANGE
     db_cursor.execute(
-        "INSERT INTO productos (nombre_producto, precio) VALUES (%s, %s) RETURNING id",
+        "INSERT INTO productos (nombre, precio) VALUES (%s, %s) RETURNING id",
         ('Producto para Borrar', 99.99)
     )
     producto_id_prueba = db_cursor.fetchone()[0]
@@ -100,7 +100,7 @@ def test_actualizar_precio_producto(db_cursor):
     # 1. ARRANGE
     # Insertamos un producto con un precio conocido (ej. 100.00)
     db_cursor.execute(
-        "INSERT INTO productos (nombre_producto, precio) VALUES (%s, %s) RETURNING id",
+        "INSERT INTO productos (nombre, precio) VALUES (%s, %s) RETURNING id",
         ('Producto para Actualizar', 100.00)
     )
     producto_id_prueba = db_cursor.fetchone()[0]
@@ -128,7 +128,7 @@ def test_sp_mostrar_productos_por_rango_no_falla(db_cursor):
     # 1. ARRANGE
     db_cursor.execute(
         """
-        INSERT INTO productos (nombre_producto, precio) VALUES
+        INSERT INTO productos (nombre, precio) VALUES
         ('Test Rango A', 10.00),
         ('Test Rango B', 50.00);
         """
