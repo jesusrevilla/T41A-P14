@@ -116,7 +116,7 @@ def test_rango_precio_notice(db_connection):
 
     cur.execute("SELECT precio FROM productos WHERE id = %s;", (pid,))
     nuevo_precio = cur.fetchone()[0]
-    assert nuevo_precio == 1200, "❌ El precio no fue actualizado correctamente."
+    assert nuevo_precio == 1200, "El precio no fue actualizado correctamente."
 
     cur.execute("""
         SELECT precio_anterior, precio_nuevo
