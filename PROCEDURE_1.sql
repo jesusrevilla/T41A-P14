@@ -19,5 +19,5 @@ BEGIN
     END IF;
 END;
 $$;
-CALL eliminar_producto(3);
+CALL eliminar_producto(1);
 SELECT * FROM productos;
