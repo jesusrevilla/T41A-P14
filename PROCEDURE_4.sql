@@ -1,11 +1,4 @@
-CREATE TABLE auditoria_productos (
-    id SERIAL PRIMARY KEY,
-    producto_id INT NOT NULL,
-    precio_anterior NUMERIC,
-    precio_nuevo NUMERIC
-);
-
-CREATE OR REPLACE PROCEDURE actualizar_precio(
+CREATE PROCEDURE actualizar_precio(
     IN p_id INT,
     IN p_nuevo_precio NUMERIC
 )
