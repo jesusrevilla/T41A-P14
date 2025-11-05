@@ -4,36 +4,18 @@ CREATE OR REPLACE PROCEDURE actualizar_producto_audit(
 )
 LANGUAGE plpgsql
 AS $$
-DECLARE
-    precio_ant NUMERIC;
 BEGIN
-    -- Iniciamos bloque controlado
-    BEGIN
-        -- Obtenemos el precio anterior
-        SELECT precio INTO precio_ant FROM productos WHERE id = p_id;
-
-        IF NOT FOUND THEN
-            RAISE NOTICE 'No se encontró producto con ID %.', p_id;
-            RETURN;
-        END IF;
-
-        -- Actualizamos el precio del producto
+    IF p_nuevo_precio > 0 THEN
         UPDATE productos
         SET precio = p_nuevo_precio
         WHERE id = p_id;
 
-        -- Insertamos el cambio en la tabla de auditoría
-        INSERT INTO auditoria_productos (id_producto, precio_anterior, precio_nuevo)
-        VALUES (p_id, precio_ant, p_nuevo_precio);
+        INSERT INTO auditoria (producto_id, accion)
+        VALUES (p_id, 'Actualización de precio');
 
-        -- Confirmamos la transacción
-        COMMIT;
-        RAISE NOTICE 'Producto % actualizado. Cambio registrado en auditoría.', p_id;
-
-    EXCEPTION
-        WHEN OTHERS THEN
-            ROLLBACK;
-            RAISE NOTICE 'Error al actualizar producto con ID %: %', p_id, SQLERRM;
-    END;
+        RAISE NOTICE 'Producto % actualizado y registrado en auditoría.', p_id;
+    ELSE
+        RAISE NOTICE 'El precio debe ser mayor que cero.';
+    END IF;
 END;
 $$;
