@@ -108,7 +108,7 @@ def test_actualizar_precio_producto(db_cursor):
     # 2. ACT
     # Llamamos al procedure para aumentar el precio en 10% (0.10)
     # Tu procedure suma 1 + 0.10
-    porcentaje_aumento = 0.10 
+    porcentaje_aumento = 10 
     db_cursor.execute("CALL actualizar_precio_por_porcentaje(%s);", (porcentaje_aumento))
 
     # 3. ASSERT
