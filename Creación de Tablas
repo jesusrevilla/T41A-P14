@@ -1,0 +1,12 @@
+CREATE TABLE IF NOT EXISTS productos (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    precio NUMERIC(10,2) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS auditoria (
+    id SERIAL PRIMARY KEY,
+    producto_id INT,
+    accion TEXT,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
