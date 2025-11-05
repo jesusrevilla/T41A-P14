@@ -2,9 +2,9 @@ name: Run PostgreSQL Tests
 
 on:
   push:
-    branches: [ "main","feature/*"]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main","feature/*"]
+    branches: [ "main" ]
 
 jobs:
   test:
@@ -53,7 +53,6 @@ jobs:
     - name: Create views
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_procedures.sql          
-        
     - name: Run tests
       run: |
         pytest
