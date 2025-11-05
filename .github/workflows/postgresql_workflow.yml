@@ -48,6 +48,7 @@ jobs:
 
     - name: Insert data
       run: |
+
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql        
   
     - name: Elimina id
@@ -58,6 +59,7 @@ jobs:
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_porcentaje_producto.sql 
   
+
     - name: Run tests
       run: |
         pytest
