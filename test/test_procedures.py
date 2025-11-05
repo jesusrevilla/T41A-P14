@@ -1,0 +1,88 @@
+import psycopg2
+import pytest
+from decimal import Decimal
+
+DB_CONFIG = {
+    "dbname": "test_db",
+    "user": "postgres",
+    "password": "postgres",
+    "host": "localhost",
+    "port": 5432
+}
+
+@pytest.fixture
+def db_connection():
+    conn = psycopg2.connect(**DB_CONFIG)
+
+    conn.notices.clear()
+
+    yield conn
+
+    conn.rollback()
+    conn.close()
+
+
+def test_eliminar_producto_existente(db_connection):
+    conn = db_connection
+    product_id_to_delete = 3
+
+    with conn.cursor() as cur:
+        cur.execute("CALL eliminar_producto(%s);", (product_id_to_delete,))
+        
+        cur.execute("SELECT * FROM productos WHERE id = %s;", (product_id_to_delete,))
+        result = cur.fetchone()
+        assert result is None
+
+    assert any("Producto eliminado exitosamente" in n for n in conn.notices)
+
+
+def test_eliminar_producto_no_existente(db_connection):
+    conn = db_connection
+    product_id_to_delete = 9999
+
+    with conn.cursor() as cur:
+        cur.execute("CALL eliminar_producto(%s);", (product_id_to_delete,))
+        
+        cur.execute("SELECT * FROM productos WHERE id = %s;", (product_id_to_delete,))
+        result = cur.fetchone()
+        assert result is None
+
+    assert any("No se encontró un producto" in n for n in conn.notices)
+
+
+def test_aumentar_precios(db_connection):
+    conn = db_connection
+    aumento = Decimal('10.00')
+    
+    with conn.cursor() as cur:
+        cur.execute("SELECT precio FROM productos WHERE id = 1;")
+        precio_original = cur.fetchone()[0]
+    
+    precio_esperado = precio_original * (Decimal('1') + (aumento / Decimal('100')))
+
+    with conn.cursor() as cur:
+        cur.execute("CALL aumentar_precios(%s);", (aumento,))
+
+    with conn.cursor() as cur:
+        cur.execute("SELECT precio FROM productos WHERE id = 1;")
+        nuevo_precio = cur.fetchone()[0]
+        
+        assert nuevo_precio == precio_esperado
+
+    assert any("Precios actualizados. 5 filas afectadas." in n for n in conn.notices)
+
+
+def test_buscar_por_rango(db_connection):
+    conn = db_connection
+    
+    with conn.cursor() as cur:
+        cur.execute("CALL buscar_por_rango(50.00, 150.00);")
+
+    
+    log_completo = "\n".join(conn.notices)
+    
+    assert "--- Productos encontrados (Rango: 50.00 a 150.00) ---" in log_completo
+    assert "Nombre: Audifonos" in log_completo
+    assert "Nombre: Teclado" in log_completo
+    assert "Nombre: Laptop" not in log_completo
+    assert "Fin de la búsqueda" in log_completo
