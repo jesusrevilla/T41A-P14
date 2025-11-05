@@ -1,34 +1,67 @@
-name: Daily Pull Request Info
+name: Run PostgreSQL Tests
 
 on:
-  workflow_dispatch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  get-pr-info:
+  test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGEES_DB: test_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    - name: Get Open Pull Requests
-      id: get-prs
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.X'
+
+    - name: Install dependencies
       run: |
-        prs=$(gh pr list --state open --json number,headRefName,author,statusCheckRollup)
-        echo "$prs" > prs.json
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt 
+
+    - name: Wait for PostgreSQL
+      run: |
+        sleep 10
+
+    - name: Run 01_create_tables.sql
+      env:
+        PGPASSWORD: postgres
+      run: |
+        PGOPTIONS="-v ON_ERROR_STOP=1" psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+
+    - name: Run 02_insert_data.sql
+      env:
+        PGPASSWORD: postgres
+      run: |
+        PGOPTIONS="-v ON_ERROR_STOP=1" psql -h localhost -U postgres -d test_db -f 02_insert_data.sql
+
+    - name: Run 03_create_functions.sql
+      env:
+        PGPASSWORD: postgres
+      run: |
+        PGOPTIONS="-v ON_ERROR_STOP=1" psql -h localhost -U postgres -d test_db -f 03_create_functions.sql
         
-        echo "Open Pull Requests:"
-        cat prs.json | jq -c '.[]' | while read pr; do
-          number=$(echo "$pr" | jq -r '.number')
-          branch=$(echo "$pr" | jq -r '.headRefName')
-          user=$(echo "$pr" | jq -r '.author.login')
-          status=$(echo "$pr" | jq -r '.statusCheckRollup[0].conclusion')
-          
-          echo "Pull Request Number: $number"
-          echo "Branch: $branch"
-          echo "User: $user"
-          echo "Status: $status"
-          echo "-------------------------"
-        done
+    - name: Run Pytest
+      env:
+        PGPASSWORD: postgres 
+      run: |
+        pytest
