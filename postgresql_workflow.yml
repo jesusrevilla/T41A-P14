@@ -51,12 +51,12 @@ jobs:
 
     - name: 03 Eliminar Producto
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/03_eliminar_producto.sql        
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/Ejercicio_1.sql        
     
     - name: 04 Aumentar Precios
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/04_aumentar_precios.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/Ejercicio_2.sql
 
     - name: 05 Obtener Productos Rango
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/05_obtener_productos_rango.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/Ejercicio_3.sql
