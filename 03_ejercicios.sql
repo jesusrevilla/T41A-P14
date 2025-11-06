@@ -8,13 +8,11 @@ AS $$
 DECLARE
     v_nombre_producto TEXT;
 BEGIN
-    -- Verificar si el producto existe
     SELECT nombre INTO v_nombre_producto
     FROM productos 
     WHERE id = p_id;
     
     IF FOUND THEN
-        -- Eliminar el producto
         DELETE FROM productos WHERE id = p_id;
         p_mensaje := 'Producto "' || v_nombre_producto || '" eliminado exitosamente.';
         RAISE NOTICE 'Eliminación exitosa: %', p_mensaje;
@@ -40,26 +38,21 @@ DECLARE
     v_contador INT := 0;
     v_producto RECORD;
 BEGIN
-    -- Validar que el porcentaje sea positivo
-    IF p_porcentaje <= 0 THEN
-        RAISE NOTICE 'El porcentaje debe ser mayor que cero.';
+    IF p_porcentaje < 0 THEN
+        RAISE NOTICE 'El porcentaje no puede ser negativo.';
         RETURN;
     END IF;
     
-    -- Mostrar precios antes del aumento
     RAISE NOTICE 'Precios antes del aumento:';
     FOR v_producto IN SELECT nombre, precio FROM productos LOOP
         RAISE NOTICE '- %: %', v_producto.nombre, v_producto.precio;
     END LOOP;
     
-    -- Actualizar precios
     UPDATE productos 
     SET precio = precio * (1 + p_porcentaje/100);
     
-    -- Contar productos afectados
     GET DIAGNOSTICS v_contador = ROW_COUNT;
     
-    -- Mostrar precios después del aumento
     RAISE NOTICE 'Precios después del aumento (%):', p_porcentaje;
     FOR v_producto IN SELECT nombre, precio FROM productos LOOP
         RAISE NOTICE '- %: %', v_producto.nombre, v_producto.precio;
@@ -78,7 +71,6 @@ CREATE OR REPLACE PROCEDURE obtener_productos_por_rango_precio(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Validar rango de precios
     IF p_precio_min > p_precio_max THEN
         RAISE NOTICE 'Error: El precio mínimo no puede ser mayor al precio máximo.';
         RETURN;
@@ -89,7 +81,6 @@ BEGIN
         RETURN;
     END IF;
     
-    -- Abrir cursor con los resultados
     OPEN p_resultados FOR
     SELECT id, nombre, precio, fecha_creacion
     FROM productos
@@ -112,7 +103,6 @@ DECLARE
     v_precio_anterior NUMERIC;
     v_nombre_anterior TEXT;
 BEGIN
-    -- Obtener valores actuales
     SELECT precio, nombre INTO v_precio_anterior, v_nombre_anterior
     FROM productos 
     WHERE id = p_id;
@@ -122,7 +112,6 @@ BEGIN
         RETURN;
     END IF;
     
-    -- Validar nuevo precio
     IF p_nuevo_precio <= 0 THEN
         RAISE NOTICE 'Error: El precio debe ser mayor que cero.';
         RETURN;
@@ -130,13 +119,11 @@ BEGIN
     
     -- Iniciar transacción
     BEGIN
-        -- Actualizar producto
         UPDATE productos 
         SET nombre = p_nuevo_nombre,
             precio = p_nuevo_precio
         WHERE id = p_id;
         
-        -- Registrar en auditoría si el precio cambió
         IF v_precio_anterior != p_nuevo_precio THEN
             INSERT INTO auditoria_productos (producto_id, precio_anterior, precio_nuevo)
             VALUES (p_id, v_precio_anterior, p_nuevo_precio);
@@ -146,12 +133,10 @@ BEGIN
         
         RAISE NOTICE 'Producto actualizado exitosamente.';
         
-        -- Confirmar transacción
         COMMIT;
         
     EXCEPTION
         WHEN OTHERS THEN
-            -- Revertir en caso de error
             ROLLBACK;
             RAISE NOTICE 'Error en la actualización: %', SQLERRM;
     END;
