@@ -33,19 +33,24 @@ def test_elimina_por_id(db_connection):
         assert cur.fetchone()[0] == 0
 
 def test_rango(db_connection):
+    precio_min = 10
+    precio_max = 400
     productos_esperados = ['Teclado'] 
     with db_connection.cursor() as cur:
-        sql_call = """
+        sql_call = f"""
         DO $$
-        DECLARE 
+        DECLARE
             out_lista TEXT;
         BEGIN
-            CALL rango_precio(%s, %s, out_lista); 
+            -- Los valores se insertan como constantes en la cadena SQL.
+            -- Usamos {precio_min} y {precio_max}
+            CALL rango_precio({precio_min}, {precio_max}, out_lista); 
+            
             EXECUTE format('SET session rangos.lista_productos = %L', out_lista);
         END
         $$;
         """
-        cur.execute(sql_call, (10, 400))
+        cur.execute(sql_call)
         cur.execute("SHOW rangos.lista_productos;")
         resultado = cur.fetchone()[0]
         for producto in productos_esperados:
