@@ -27,8 +27,15 @@ def run_query_from_file(conn, filename):
 def test_elimina_por_id(db_connection):
     result = run_query_from_file(db_connection, "03_elimina_por_id.sql")
     names = [row[0] for row in result]
-    assert "Ana" in names and "Luis" in names
-    assert "Carlos" not in names
+    mensaje_exito_esperado = 'Se elimino el producto exitosamente.\n' 
+    mensaje_no_encontrado_esperado = 'No se encontro el producto\n'
+    assert any(str(notice) == mensaje_exito_esperado for notice in notices_exito), \
+        f"No se encontró el notice de éxito esperado: '{mensaje_exito_esperado}'"
+    assert any(str(notice) == mensaje_no_encontrado_esperado for notice in notices_no_encontrado), \
+        f"No se encontró el notice de no encontrado esperado: '{mensaje_no_encontrado_esperado}'"
+
+
+
 
 def test_porcentaje(db_connection):
     result = run_query_from_file(db_connection, "04_porcentaje_producto.sql")
