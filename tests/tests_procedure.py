@@ -24,25 +24,15 @@ def run_query_from_file(conn, filename):
         cur.execute(query)
         return cur.fetchall()
 
-def test_inner_join(db_connection):
-    result = run_query_from_file(db_connection, "03_inner_join.sql")
+def test_elimina_por_id(db_connection):
+    result = run_query_from_file(db_connection, "03_elimina_por_id.sql")
     names = [row[0] for row in result]
     assert "Ana" in names and "Luis" in names
     assert "Carlos" not in names
 
-def test_left_join(db_connection):
-    result = run_query_from_file(db_connection, "04_left_join.sql")
+def test_porcentaje(db_connection):
+    result = run_query_from_file(db_connection, "04_porcentaje_producto.sql")
     names = [row[0] for row in result]
     assert set(names) == {"Ana", "Luis", "Carlos"}
 
-def test_right_join(db_connection):
-    result = run_query_from_file(db_connection, "05_right_join.sql")
-    products = [row[1] for row in result]
-    assert "Phone" in products
 
-def test_full_outer_join(db_connection):
-    result = run_query_from_file(db_connection, "06_full_outer_join.sql")
-    names = [row[0] for row in result]
-    products = [row[1] for row in result]
-    assert "Carlos" in names
-    assert "Phone" in products
