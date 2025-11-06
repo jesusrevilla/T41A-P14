@@ -71,7 +71,15 @@ jobs:
     - name: Run PostgreSQL tests
       run: |
         echo "🧪 Starting comprehensive tests..."
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f test_01_Completo.sql
+        # Renombrar temporalmente el archivo .py a .sql para la ejecución
+        if [ -f "test_01_Completo.py" ]; then
+          cp test_01_Completo.py test_01_Completo.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f test_01_Completo.sql
+          rm test_01_Completo.sql
+        else
+          echo "❌ Test file not found!"
+          exit 1
+        fi
 
     - name: Final verification
       run: |
