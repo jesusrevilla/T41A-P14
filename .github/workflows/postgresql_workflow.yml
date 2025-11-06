@@ -56,6 +56,6 @@ jobs:
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_exercise_aumentar_precios.sql
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_exercise_productos_en_rango.sql
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_exercise_actualizar_con_auditoria.sql
-        - name: Run tests
-          run: |
-            pytest -q
+        
+    - name: Run tests
+      run: pytest -q
