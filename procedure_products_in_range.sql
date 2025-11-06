@@ -1,0 +1,17 @@
+CREATE OR REPLACE PROCEDURE productos_en_rango(
+    IN p_min NUMERIC,
+    IN p_max NUMERIC
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    rec RECORD;
+BEGIN
+    FOR rec IN
+        SELECT * FROM productos
+        WHERE precio BETWEEN p_min AND p_max
+    LOOP
+        RAISE NOTICE 'ID: %, Nombre: %, Precio: %', rec.id, rec.nombre, rec.precio;
+    END LOOP;
+END;
+$$;
