@@ -16,7 +16,40 @@ $$;
 
 CALL eliminar_producto(3);
 
+CREATE OR REPLACE PROCEDURE aumentar_precios(
+    IN p_porcentaje NUMERIC  
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    r RECORD;
+    v_factor NUMERIC;
+BEGIN
+    IF p_porcentaje <= 0 THEN
+        RAISE NOTICE 'El porcentaje debe ser mayor que 0.';
+        RETURN;
+    END IF;
 
+    v_factor := 1 + (p_porcentaje / 100);
+
+    FOR r IN SELECT id, nombre, precio FROM productos LOOP
+        UPDATE productos
+        SET precio = precio * v_factor
+        WHERE id = r.id;
+
+        RAISE NOTICE 'Producto ID: %, Nombre: %, Precio anterior: %, Nuevo precio: %',
+            r.id, r.nombre, r.precio, r.precio * v_factor;
+    END LOOP;
+
+    IF NOT FOUND THEN
+        RAISE NOTICE 'No se encontraron productos para actualizar.';
+    ELSE
+        RAISE NOTICE 'Aumento de precios completado';
+    END IF;
+END;
+$$;
+
+CALL aumentar_precios(10);  
 
 
 CREATE OR REPLACE PROCEDURE productos_por_rango(
