@@ -60,8 +60,8 @@ def test_rango(db_connection):
     
 def test_porcentaje(db_connection):
     PRODUCTO_NOMBRE = 'Teclado'
-    PRECIO_INICIAL = Decimal('299.99')
-    PORCENTAJE = Decimal('10.00')
+    PRECIO_INICIAL = 299.99
+    PORCENTAJE = 10.00
     PRECIO_ESPERADO = 329.99 
     with db_connection.cursor() as cur:
         cur.execute(
