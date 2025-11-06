@@ -1,23 +1,15 @@
 -- 1_Crear un procedimiento que elimine un producto por su ID y devuelva un mensaje indicando si fue exitoso o no.
-CREATE OR REPLACE PROCEDURE eliminar_producto(
-    IN p_producto_id INT,
-    OUT p_mensaje TEXT
-)
+-- Eliminar un producto por ID
+CREATE PROCEDURE eliminar_producto(IN p_id_producto INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    -- Intentar eliminar el producto con el ID proporcionado
-    DELETE FROM productos
-    WHERE id = p_producto_id;
-
-    -- Verificar cuántas filas fueron afectadas
+    -- Intenta eliminar el producto con el ID dado
+    DELETE FROM productos WHERE id = p_id_producto;
     IF FOUND THEN
-        p_mensaje := ' Producto con ID ' || p_producto_id || ' eliminado exitosamente.';
+        RAISE NOTICE 'Producto % eliminado exitosamente.', p_id_producto;
     ELSE
-        p_mensaje := ' No se encontró ningún producto con ID ' || p_producto_id || ' para eliminar.';
+        RAISE NOTICE 'Error: No se encontró el producto con ID %.', p_id_producto;
     END IF;
-
-    -- Opcional: Para seguimiento en logs
-    -- RAISE NOTICE 'Estado: %', p_mensaje;
 END;
 $$;
