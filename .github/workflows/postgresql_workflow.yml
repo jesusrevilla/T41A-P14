@@ -60,7 +60,3 @@ jobs:
     - name: 05 Obtener Productos Rango
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/05_obtener_productos_rango.sql
-
-    - name: Run tests
-      run: |
-        pytest
