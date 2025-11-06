@@ -7,9 +7,10 @@ BEGIN
     IF EXISTS (SELECT 1 FROM productos WHERE id = p_id) THEN
         Delete from productos
         WHERE id = p_id;
-        RAISE NOTICE 'Se elimino el producto.';
+        RAISE NOTICE 'Se elimino el producto exitosamente.';
+    ELSE 
+        RAISE NOTICE 'No se encontro el producto';
     END IF;
 END;
 $$;
---CALL eliminar_producto (2);
---select * from productos;
+
