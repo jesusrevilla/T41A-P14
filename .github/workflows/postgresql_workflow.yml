@@ -26,12 +26,12 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.X'
+        python-version: '3.x'
 
     - name: Install dependencies
       run: |
@@ -48,12 +48,14 @@ jobs:
 
     - name: Insert data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql
 
-    - name: Create views
+    - name: Create exercises (03–06)
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
-        
-    - name: Run tests
-      run: |
-        pytest
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_exercise_eliminar_producto.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_exercise_aumentar_precios.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_exercise_productos_en_rango.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_exercise_actualizar_con_auditoria.sql
+        - name: Run tests
+          run: |
+            pytest -q
