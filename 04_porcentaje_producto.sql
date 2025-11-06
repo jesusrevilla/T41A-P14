@@ -8,5 +8,3 @@ BEGIN
     SET precio= precio+(precio*(porcentaje/100.0));
 END;
 $$;
-
-CALL porcentaje_producto(10);
