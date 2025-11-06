@@ -58,6 +58,11 @@ def test_rango(db_connection):
 
 
     
-
+def test_porcentaje(db_connection):
+    with db_connection.cursor() as cur:
+      cur.execute("CALL porcentaje_producto(10);", (PORCENTAJE,))
+      db_connection.commit() 
+      cur.execute("SELECT ROUND(precio,2) FROM productos WHERE nombre='Teclado';")
+      assert cur.fetchone()[0]==329.99
 
 
