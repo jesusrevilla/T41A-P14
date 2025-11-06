@@ -39,7 +39,7 @@ BEGIN
 
     TRUNCATE TABLE resultados_productos;
 
-    INSERT INTO tmp_resultados_productos
+    INSERT INTO resultados_productos
     SELECT *
     FROM productos
     WHERE precio BETWEEN p_minimo AND p_maximo
