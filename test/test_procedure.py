@@ -66,7 +66,7 @@ def test_buscar_por_rango():
     cur = conn.cursor()
 
     cur.execute("CALL buscar_por_rango(50.00, 100.00);")
-    cur.execute("SELECT nombre FROM tmp_resultados_productos ORDER BY nombre;")
+    cur.execute("SELECT nombre FROM resultados_productos ORDER BY nombre;")
     
     resultados = cur.fetchall()
     nombres = [row[0] for row in resultados]
