@@ -14,3 +14,6 @@ BEGIN
 END;
 $$;
 
+CALL eliminar_productos(2);
+CALL eliminar_productos(15);
+
