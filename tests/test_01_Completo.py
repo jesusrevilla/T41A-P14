@@ -1,3 +1,4 @@
+-- test_01_Completo.sql
 \echo '=== INICIANDO TESTS COMPLETOS ==='
 
 -- =============================================
@@ -38,15 +39,24 @@ SELECT id, nombre, precio FROM productos ORDER BY id;
 
 -- Test 2.1: Aumento del 10%
 \echo 'Test 2.1: Aumento del 10%'
-CALL aumentar_precios_porcentaje(10);
+DO $$
+BEGIN
+    CALL aumentar_precios_porcentaje(10);
+END $$;
 
 -- Test 2.2: Intentar aumento con porcentaje negativo
 \echo 'Test 2.2: Intentar aumento con porcentaje negativo (-5%)'
-CALL aumentar_precios_porcentaje(-5);
+DO $$
+BEGIN
+    CALL aumentar_precios_porcentaje(-5);
+END $$;
 
 -- Test 2.3: Aumento del 5%
 \echo 'Test 2.3: Aumento del 5%'
-CALL aumentar_precios_porcentaje(5);
+DO $$
+BEGIN
+    CALL aumentar_precios_porcentaje(5);
+END $$;
 
 -- Verificar precios después del TEST 2
 \echo 'Precios después de TEST 2:'
@@ -118,19 +128,31 @@ SELECT * FROM auditoria_productos ORDER BY fecha_cambio;
 
 -- Test 4.1: Actualización exitosa con cambio de precio
 \echo 'Test 4.1: Actualización con cambio de precio (ID 2)'
-CALL actualizar_producto_con_auditoria(2, 'Mouse Gamer Pro', 250.00);
+DO $$
+BEGIN
+    CALL actualizar_producto_con_auditoria(2, 'Mouse Gamer Pro', 250.00);
+END $$;
 
 -- Test 4.2: Actualización con precio inválido
 \echo 'Test 4.2: Actualización con precio inválido (ID 3)'
-CALL actualizar_producto_con_auditoria(3, 'Monitor', -500.00);
+DO $$
+BEGIN
+    CALL actualizar_producto_con_auditoria(3, 'Monitor', -500.00);
+END $$;
 
 -- Test 4.3: Actualización de producto inexistente
 \echo 'Test 4.3: Actualización de producto inexistente (ID 999)'
-CALL actualizar_producto_con_auditoria(999, 'Producto Fake', 100.00);
+DO $$
+BEGIN
+    CALL actualizar_producto_con_auditoria(999, 'Producto Fake', 100.00);
+END $$;
 
 -- Test 4.4: Actualización solo de nombre (mismo precio)
 \echo 'Test 4.4: Actualización solo de nombre (mismo precio - ID 4)'
-CALL actualizar_producto_con_auditoria(4, 'CPU Gamer', 2500.75);
+DO $$
+BEGIN
+    CALL actualizar_producto_con_auditoria(4, 'CPU Gamer', 2500.75);
+END $$;
 
 -- Verificar estado final del TEST 4
 \echo 'Estado final después de TEST 4:'
@@ -147,7 +169,10 @@ SELECT * FROM auditoria_productos ORDER BY fecha_cambio;
 
 -- Test 5.1: Aumento del 0% (no debería cambiar nada)
 \echo 'Test 5.1: Aumento del 0%'
-CALL aumentar_precios_porcentaje(0);
+DO $$
+BEGIN
+    CALL aumentar_precios_porcentaje(0);
+END $$;
 
 -- Test 5.2: Rango extremo (precios muy altos)
 \echo 'Test 5.2: Rango extremo (5000 - 10000)'
