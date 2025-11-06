@@ -10,7 +10,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
   -- Si no mandan nombre, usa uno por defecto (no afecta al test)
-  IF p_cursor IS NULL OR p_cursor = '' THEN
+  IF p_cursor IS NULL THEN
     p_cursor := 'productos_en_rango_cur';
   END IF;
 
