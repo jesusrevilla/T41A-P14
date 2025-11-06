@@ -26,8 +26,8 @@ def run_query_from_file(conn, filename):
 
 def test_elimina_por_id(db_connection):
     results, notices_list = run_query_from_file(db_connection, "03_elimina_por_id.sql")
-    mensaje_exito_esperado = 'NOTICE: Se elimino el producto exitosamente.\n' 
-    mensaje_no_encontrado_esperado = 'NOTICE: No se encontro el producto\n'
+    mensaje_exito_esperado = 'NOTICE:  Se elimino el producto exitosamente.\n' 
+    mensaje_no_encontrado_esperado = 'NOTICE:  No se encontro el producto\n'
     assert any(mensaje_exito_esperado == notice for notice in notices_list), \
         f"Falta el NOTICE de éxito esperado. Notices capturados: {notices_list}"
     assert any(mensaje_no_encontrado_esperado == notice for notice in notices_list), \
