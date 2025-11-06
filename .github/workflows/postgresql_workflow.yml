@@ -52,5 +52,5 @@ jobs:
           psql postgresql://postgres:postgres@localhost:5432/tienda -f 03_eliminar_producto.sql
           psql postgresql://postgres:postgres@localhost:5432/tienda -f 04_aumentar_precios.sql
           psql postgresql://postgres:postgres@localhost:5432/tienda -f 05_obtener_productos_rango.sql
-          # Si también agregas auditoría:
           # psql postgresql://postgres:postgres@localhost:5432/tienda -f 06_actualizar_producto_auditoria.sql
+
