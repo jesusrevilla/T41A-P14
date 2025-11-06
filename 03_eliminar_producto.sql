@@ -6,9 +6,9 @@ BEGIN
     WHERE id = p_id;
 
     IF FOUND THEN
-        RAISE NOTICE '✅ Producto con ID % eliminado correctamente.', p_id;
+        RAISE NOTICE 'Producto eliminado correctamente.';
     ELSE
-        RAISE NOTICE '⚠️ No se encontró un producto con ID %.', p_id;
+        RAISE NOTICE 'No se encontró el producto';
     END IF;
 END;
 $$;
