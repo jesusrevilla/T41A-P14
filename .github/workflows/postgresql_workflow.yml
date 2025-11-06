@@ -58,6 +58,10 @@ jobs:
     - name: Porcentaje price
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_porcentaje_producto.sql 
+
+    - name: Porcentaje price
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_rango_precios.sql 
   
 
     - name: Run tests
