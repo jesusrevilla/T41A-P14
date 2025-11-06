@@ -1,6 +1,7 @@
 import psycopg2
 import pytest
 from pathlib import Path
+from decimal import Decimal
 
 DB_CONFIG = {
     "dbname": "test_db",
@@ -48,7 +49,7 @@ def test_aumentar_precios(db_connection):
         cur.execute("SELECT precio FROM productos WHERE nombre = 'Mouse';")
         precio_nuevo = cur.fetchone()[0]
 
-        assert round(precio_nuevo, 2) == round(precio_original * 1.10, 2)
+        assert round(precio_nuevo, 2) == round(precio_original * Decimal('1.10'), 2)
 
 
 def test_productos_por_rango(db_connection):
