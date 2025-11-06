@@ -54,6 +54,7 @@ def test_aumentar_precios(db_connection):
 
 def test_productos_por_rango(db_connection):
     with db_connection.cursor() as cur:
+        cur.execute("UPDATE productos SET precio = precio / 1.10;")
         cur.execute("""
             SELECT id, nombre, precio FROM productos
             WHERE precio BETWEEN 50 AND 200 ORDER BY precio;
