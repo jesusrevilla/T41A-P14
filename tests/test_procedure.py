@@ -59,10 +59,23 @@ def test_rango(db_connection):
 
     
 def test_porcentaje(db_connection):
+    PRODUCTO_NOMBRE = 'Teclado'
+    PRECIO_INICIAL = Decimal('299.99')
+    PORCENTAJE = Decimal('10.00')
+    PRECIO_ESPERADO = 329.99 
     with db_connection.cursor() as cur:
-      cur.execute("CALL porcentaje_producto(10);", (PORCENTAJE,))
-      db_connection.commit() 
-      cur.execute("SELECT ROUND(precio,2) FROM productos WHERE nombre='Teclado';")
-      assert cur.fetchone()[0]==329.99
+        cur.execute(
+            "UPDATE productos SET precio = %s WHERE nombre = %s;",
+            (PRECIO_INICIAL, PRODUCTO_NOMBRE)
+        )
+        db_connection.commit()
+        cur.execute("CALL porcentaje_producto(%s);", (PORCENTAJE,))
+        db_connection.commit()
+        cur.execute(
+            "SELECT ROUND(precio, 2) FROM productos WHERE nombre = %s;",
+            (PRODUCTO_NOMBRE,)
+        )
+        precio_actualizado_db = cur.fetchone()[0]
+        assert float(precio_actualizado_db) == pytest.approx(PRECIO_ESPERADO)
 
 
