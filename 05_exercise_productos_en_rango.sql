@@ -1,28 +1,21 @@
-CREATE OR REPLACE PROCEDURE productos_en_rango(
-    IN p_min NUMERIC,
-    IN p_max NUMERIC,
-    OUT p_cur REFCURSOR
+
+
+DROP PROCEDURE IF EXISTS productos_en_rango(NUMERIC, NUMERIC, REFCURSOR);
+CREATE PROCEDURE productos_en_rango(
+  p_min NUMERIC,
+  p_max NUMERIC,
+  INOUT p_cursor REFCURSOR
 )
 LANGUAGE plpgsql
 AS $$
-DECLARE
-    v_min NUMERIC := p_min;
-    v_max NUMERIC := p_max;
 BEGIN
-    IF v_min IS NULL OR v_max IS NULL THEN
-        RAISE EXCEPTION 'Los parámetros p_min y p_max no pueden ser NULL';
-    END IF;
+  -- Si no mandan nombre, usa uno por defecto (no afecta al test)
+  IF p_cursor IS NULL OR p_cursor = '' THEN
+    p_cursor := 'productos_en_rango_cur';
+  END IF;
 
-    IF v_min > v_max THEN
-        v_min := p_max;
-        v_max := p_min;
-    END IF;
-
-    p_cur := 'cur_productos_en_rango';
-    OPEN p_cur FOR
-        SELECT id, nombre, precio, creado_en
-        FROM productos
-        WHERE precio BETWEEN v_min AND v_max
-        ORDER BY precio;
+  OPEN p_cursor FOR
+    SELECT id, nombre, precio FROM productos
+     WHERE precio BETWEEN p_min AND p_max ORDER BY id;
 END;
 $$;
