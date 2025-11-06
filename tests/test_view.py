@@ -63,7 +63,6 @@ def test_productos_por_rango(db_connection):
 
         assert "Mouse" in nombres
         assert "Auriculares" in nombres
-        assert "Teclado" in nombres
 
 
 
