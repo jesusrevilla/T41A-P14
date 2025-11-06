@@ -1,0 +1,56 @@
+name: PostgreSQL Project Workflow
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test_postgresql:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tienda
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Instalar dependencias
+        run: |
+          pip install -r requirements.txt
+
+      - name: Esperar a que PostgreSQL esté listo
+        run: |
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Esperando a PostgreSQL..."
+            sleep 2
+          done
+
+      - name: Ejecutar scripts SQL en orden
+        run: |
+          psql postgresql://postgres:postgres@localhost:5432/tienda -f 01_create_table.sql
+          psql postgresql://postgres:postgres@localhost:5432/tienda -f 02_insert_data.sql
+          psql postgresql://postgres:postgres@localhost:5432/tienda -f 03_eliminar_producto.sql
+          psql postgresql://postgres:postgres@localhost:5432/tienda -f 04_aumentar_precios.sql
+          psql postgresql://postgres:postgres@localhost:5432/tienda -f 05_obtener_productos_rango.sql
+          # Si también agregas auditoría:
+          # psql postgresql://postgres:postgres@localhost:5432/tienda -f 06_actualizar_producto_auditoria.sql
