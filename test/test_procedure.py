@@ -2,10 +2,6 @@ import psycopg2
 from decimal import Decimal
 
 def test_eliminar_producto():
-    """
-    Prueba que el sp_eliminar_producto funciona y devuelve el 
-    mensaje de éxito correcto.
-    """
     conn = psycopg2.connect(
         dbname='test_db',
         user='postgres',
@@ -24,10 +20,6 @@ def test_eliminar_producto():
     assert count == 0
 
 def test_eliminar_producto_no_encontrado():
-    """
-    Prueba que el sp_eliminar_producto maneja un ID inexistente 
-    y devuelve el mensaje de error.
-    """
     conn = psycopg2.connect(
         dbname='test_db',
         user='postgres',
@@ -44,9 +36,6 @@ def test_eliminar_producto_no_encontrado():
 
 
 def test_aumentar_precios():
-    """
-    Prueba que sp_aumentar_precios actualiza correctamente todos los precios.
-    """
     conn = psycopg2.connect(
         dbname='test_db',
         user='postgres',
@@ -67,10 +56,6 @@ def test_aumentar_precios():
     assert precio_mochila == Decimal('49.72')
 
 def test_buscar_por_rango():
-    """
-    Prueba que sp_buscar_por_rango encuentra los productos correctos
-    y los inserta en la tabla temporal.
-    """
     conn = psycopg2.connect(
         dbname='test_db',
         user='postgres',
@@ -92,10 +77,6 @@ def test_buscar_por_rango():
     assert "Disco Duro Externo 1TB" in nombres
 
 def test_actualizar_producto_y_auditoria():
-    """
-    Prueba que sp_actualizar_producto modifica el producto Y
-    crea un registro correcto en la tabla de auditoría.
-    """
     conn = psycopg2.connect(
         dbname='test_db',
         user='postgres',
