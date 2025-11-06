@@ -76,7 +76,7 @@ BEGIN
     END LOOP;
 
     IF NOT FOUND THEN
-        RAISE NOTICE 'No se encontraron productos en el rango %.2f - %.2f', p_min, p_max;
+        RAISE NOTICE 'No se encontraron productos en el rango';
     ELSE
         RAISE NOTICE 'Fin de listado.';
     END IF;
