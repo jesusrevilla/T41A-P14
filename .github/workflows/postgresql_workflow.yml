@@ -23,6 +23,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -36,28 +37,31 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+
     - name: Wait for PostgreSQL
       run: |
         sleep 10
+
     - name: 01 Create Tables
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/01_create_tables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/01_Create_tables.sql
+
     - name: 02 Insert Data
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/02_insert_data.sql    
+
     - name: 03 Funcion Descuento
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/03_funcion_descuento.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/03_delete_procedure_data.sql
+
     - name: 04 Funcion Validar Email
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/04_funcion_validar_email.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/04_procedure_increase_prices.sql
+
     - name: 05 Funcion Stock Bajo
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/05_funcion_stock_bajo.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/05_procedure_products_in_range.sql
     
     - name: 06 Funcion Dia Semana
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/06_funcion_dia_semana.sql
-    - name: 07 Funcion Contar Empleados
-      run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/07_funcion_contar_empleados.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/06_procedure_audit_update.sql
