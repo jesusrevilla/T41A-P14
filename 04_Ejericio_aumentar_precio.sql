@@ -10,3 +10,5 @@ BEGIN
     RAISE NOTICE 'Precios aumentados';
 END;
 $$;
+
+CALL aumentar_precios(10);
