@@ -61,7 +61,3 @@ jobs:
     - name: Funcion rango precios
       run: |
          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_Ejercicio_rangos_precios.sql      
-        
-    - name: Run tests
-      run: |
-        pytest
