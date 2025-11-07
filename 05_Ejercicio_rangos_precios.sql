@@ -16,3 +16,5 @@ BEGIN
     END LOOP;
 END;
 $$;
+
+CALL productos_rango(300, 8500);
