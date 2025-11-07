@@ -12,3 +12,5 @@ BEGIN
     END IF;
 END;
 $$;
+
+CALL eliminar_precio(1);
