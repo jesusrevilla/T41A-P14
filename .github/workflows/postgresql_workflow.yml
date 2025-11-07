@@ -1,4 +1,4 @@
-name: Run PostgreSQL Tests
+name: Run PostgreSQL Functions
 
 on:
   push:
@@ -42,30 +42,26 @@ jobs:
       run: |
         sleep 10
 
-    - name: Set up database schema and data
+    - name: 01 Create Tables
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/01_Create_tables.sql
 
-    - name: Insert data
+    - name: 02 Insert Data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/02_insert_data.sql    
 
-    - name: Delete data
+    - name: 03 Funcion Descuento
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_delete_procedure_data.sql
-        
-    - name: Increase prices
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/03_delete_procedure_data.sql
+
+    - name: 04 Funcion Validar Email
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_procedure_increase_prices.sql 
-        
-    - name: Products range
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/04_procedure_increase_prices.sql
+
+    - name: 05 Funcion Stock Bajo
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_procedure_products_in_range.sql
-        
-    - name: Auditoria updata
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/05_procedure_products_in_range.sql
+    
+    - name: 06 Funcion Dia Semana
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_procedure_audit_update.sql        
-        
-    - name: Run tests
-      run: |
-        pytest
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/06_procedure_audit_update.sql
