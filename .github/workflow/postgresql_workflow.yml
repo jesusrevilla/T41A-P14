@@ -44,23 +44,23 @@ jobs:
 
     - name: O1 Create tables
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/01_Create_table.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_Create_table.sql
 
     - name: Insert data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/02_insert_data.sql     
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql     
 
     - name: Funcion Eliminar
       run: |
-         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/03_Ejercicio_eliminar.sql 
+         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_Ejercicio_eliminar.sql 
 
     - name: Funcion aumentar precios
       run: |
-         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/04_Ejercicio_aumentar_precio.sql
+         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_Ejercicio_aumentar_precio.sql
 
     - name: Funcion rango precios
       run: |
-         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/05_Ejercicio_rangos_precios.sql
+         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_Ejercicio_rangos_precios.sql
         
     - name: Run tests
       run: |
