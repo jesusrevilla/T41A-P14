@@ -42,17 +42,25 @@ jobs:
       run: |
         sleep 10
 
-    - name: Set up database schema and data
+    - name: O1 Create tables
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/01_Create_tables.sql
 
     - name: Insert data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/02_insert_data.sql     
 
-    - name: Create views
+    - name: Funcion Eliminar
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
+         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/Ejercicio_eliminar.sql 
+
+    - name: Funcion aumentar precios
+      run: |
+         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/Ejercicio_aumentar_precio.sql
+
+    - name: Funcion rango precios
+      run: |
+         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/Ejercicio_rangos_precios.sql
         
     - name: Run tests
       run: |
