@@ -1,4 +1,5 @@
 name: Run PostgreSQL Functions
+name: Run PostgreSQL Tests
 
 on:
   push:
@@ -65,3 +66,18 @@ jobs:
     - name: 06 Funcion Dia Semana
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/06_procedure_audit_update.sql
+    - name: Set up database schema and data
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+
+    - name: Insert data
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+
+    - name: Create views
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
+        
+    - name: Run tests
+      run: |
+        pytest
