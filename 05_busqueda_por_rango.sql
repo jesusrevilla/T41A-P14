@@ -11,6 +11,3 @@ BEGIN
   WHERE p.precio > p_rangoI AND p.precio < p_rangoF;
 END;
 $$;
-
-
-SELECT * FROM busqueda_por_rango(10, 1000);
