@@ -52,7 +52,7 @@ jobs:
 
     - name: create 
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_procedures.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_ejercicios.sql
     
     - name: Run tests
       run: |
