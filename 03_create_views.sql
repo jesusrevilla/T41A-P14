@@ -66,6 +66,6 @@ END;
 $$;
 
 BEGIN;
-CALL obtener_productos_por_rango_proc(100, 500, 'micursor');
+CALL productos_por_rango(100, 500, 'micursor');
 FETCH ALL FROM "micursor";
 COMMIT;
