@@ -1,144 +1,96 @@
--- 1. Procedimiento que elimina un producto por su ID y devuelve mensaje
-CREATE OR REPLACE PROCEDURE eliminar_producto(
-    IN p_id INT,
-    OUT p_mensaje TEXT
-)
-LANGUAGE plpgsql
+--1 
+
+CREATE PROCEDURE eliminar_producto(p_id INT)
+LANGUAGE plpgsql 
 AS $$
 DECLARE
-    v_nombre_producto TEXT;
+    v_nombre TEXT;
 BEGIN
-    SELECT nombre INTO v_nombre_producto
-    FROM productos 
-    WHERE id = p_id;
-    
-    IF FOUND THEN
-        DELETE FROM productos WHERE id = p_id;
-        p_mensaje := 'Producto "' || v_nombre_producto || '" eliminado exitosamente.';
-        RAISE NOTICE 'Eliminación exitosa: %', p_mensaje;
-    ELSE
-        p_mensaje := 'Error: No se encontró el producto con ID ' || p_id;
-        RAISE NOTICE 'Error en eliminación: %', p_mensaje;
-    END IF;
-    
-EXCEPTION
-    WHEN OTHERS THEN
-        p_mensaje := 'Error inesperado: ' || SQLERRM;
-        RAISE NOTICE 'Excepción: %', p_mensaje;
-END;
-$$;
-
--- 2. Procedimiento que aumenta el precio de todos los productos en un porcentaje dado
-CREATE OR REPLACE PROCEDURE aumentar_precios_porcentaje(
-    IN p_porcentaje NUMERIC
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    v_contador INT := 0;
-    v_producto RECORD;
-BEGIN
-    IF p_porcentaje < 0 THEN
-        RAISE NOTICE 'El porcentaje no puede ser negativo.';
-        RETURN;
-    END IF;
-    
-    RAISE NOTICE 'Precios antes del aumento:';
-    FOR v_producto IN SELECT nombre, precio FROM productos LOOP
-        RAISE NOTICE '- %: %', v_producto.nombre, v_producto.precio;
-    END LOOP;
-    
-    UPDATE productos 
-    SET precio = precio * (1 + p_porcentaje/100);
-    
-    GET DIAGNOSTICS v_contador = ROW_COUNT;
-    
-    RAISE NOTICE 'Precios después del aumento (%):', p_porcentaje;
-    FOR v_producto IN SELECT nombre, precio FROM productos LOOP
-        RAISE NOTICE '- %: %', v_producto.nombre, v_producto.precio;
-    END LOOP;
-    
-    RAISE NOTICE 'Total de productos actualizados: %', v_contador;
-END;
-$$;
-
--- 3. Procedimiento que devuelve productos dentro de un rango de precios
-CREATE OR REPLACE PROCEDURE obtener_productos_por_rango_precio(
-    IN p_precio_min NUMERIC,
-    IN p_precio_max NUMERIC,
-    INOUT p_resultados REFCURSOR DEFAULT 'productos_cursor'
-)
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF p_precio_min > p_precio_max THEN
-        RAISE NOTICE 'Error: El precio mínimo no puede ser mayor al precio máximo.';
-        RETURN;
-    END IF;
-    
-    IF p_precio_min < 0 OR p_precio_max < 0 THEN
-        RAISE NOTICE 'Error: Los precios no pueden ser negativos.';
-        RETURN;
-    END IF;
-    
-    OPEN p_resultados FOR
-    SELECT id, nombre, precio, fecha_creacion
-    FROM productos
-    WHERE precio BETWEEN p_precio_min AND p_precio_max
-    ORDER BY precio;
-    
-    RAISE NOTICE 'Búsqueda completada. Use FETCH ALL FROM "%" para ver los resultados.', p_resultados;
-END;
-$$;
-
--- 4. Procedimiento para actualizar producto con auditoría
-CREATE OR REPLACE PROCEDURE actualizar_producto_con_auditoria(
-    IN p_id INT,
-    IN p_nuevo_nombre TEXT,
-    IN p_nuevo_precio NUMERIC
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    v_precio_anterior NUMERIC;
-    v_nombre_anterior TEXT;
-BEGIN
-    SELECT precio, nombre INTO v_precio_anterior, v_nombre_anterior
-    FROM productos 
-    WHERE id = p_id;
-    
+    SELECT nombre INTO v_nombre FROM productos WHERE id = p_id;
     IF NOT FOUND THEN
-        RAISE NOTICE 'Error: No se encontró el producto con ID %', p_id;
+        RAISE NOTICE 'Producto no encontrado';
+    ELSE
+        DELETE FROM productos WHERE id = p_id;
+        RAISE NOTICE 'Producto eliminado';
+    END IF;
+END;
+$$;
+
+
+--2
+CREATE PROCEDURE aumentar_precios(
+    p_porcentaje NUMERIC
+)
+LANGUAGE plpgsql 
+AS $$
+BEGIN
+    UPDATE productos
+    SET precio = precio * (1 + (p_porcentaje / 100));
+END;
+$$;
+
+
+--3
+CREATE  PROCEDURE buscar_por_rango(
+    p_minimo NUMERIC,
+    p_maximo NUMERIC
+)
+LANGUAGE plpgsql AS $$
+BEGIN
+    CREATE TEMPORARY TABLE IF NOT EXISTS resultados_productos (
+        id INT,
+        nombre TEXT,
+        precio NUMERIC(10,2)
+    ) ON COMMIT DROP;
+
+    TRUNCATE TABLE resultados_productos;
+
+    INSERT INTO resultados_productos
+    SELECT *
+    FROM productos
+    WHERE precio BETWEEN p_minimo AND p_maximo
+    ORDER BY precio ASC;
+
+END;
+$$;
+
+--4
+
+CREATE OR REPLACE PROCEDURE actualizar_producto(
+    p_id INT,
+    p_nuevo_nombre TEXT,
+    p_nuevo_precio NUMERIC
+)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_anterior RECORD;
+BEGIN
+    SELECT * INTO v_anterior FROM productos WHERE id = p_id;
+
+    IF NOT FOUND THEN
+        RAISE NOTICE 'No se actualizó nada.';
         RETURN;
     END IF;
-    
-    IF p_nuevo_precio <= 0 THEN
-        RAISE NOTICE 'Error: El precio debe ser mayor que cero.';
-        RETURN;
-    END IF;
-    
-    -- Iniciar transacción
-    BEGIN
-        UPDATE productos 
-        SET nombre = p_nuevo_nombre,
-            precio = p_nuevo_precio
-        WHERE id = p_id;
-        
-        IF v_precio_anterior != p_nuevo_precio THEN
-            INSERT INTO auditoria_productos (producto_id, precio_anterior, precio_nuevo)
-            VALUES (p_id, v_precio_anterior, p_nuevo_precio);
-            
-            RAISE NOTICE 'Auditoría: Precio cambiado de % a %', v_precio_anterior, p_nuevo_precio;
-        END IF;
-        
-        RAISE NOTICE 'Producto actualizado exitosamente.';
-        
-        COMMIT;
-        
-    EXCEPTION
-        WHEN OTHERS THEN
-            ROLLBACK;
-            RAISE NOTICE 'Error en la actualización: %', SQLERRM;
-    END;
+
+    UPDATE productos
+    SET
+        nombre = p_nuevo_nombre,
+        precio = p_nuevo_precio
+    WHERE id = p_id;
+
+    INSERT INTO productos_auditoria (
+        id_producto,
+        nombre_anterior,
+        precio_anterior,
+        nombre_nuevo,
+        precio_nuevo
+    )
+    VALUES (
+        p_id,
+        v_anterior.nombre,
+        v_anterior.precio,
+        p_nuevo_nombre,
+        p_nuevo_precio 
+    );
 END;
 $$;
