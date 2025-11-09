@@ -1,3 +1,2 @@
---upgrade pip
 pytest
 psycopg2-binary
