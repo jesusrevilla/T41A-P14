@@ -1,237 +1,110 @@
--- test_01_Completo.sql
-\echo '=== INICIANDO TESTS COMPLETOS ==='
+import psycopg2
+from decimal import Decimal
 
--- =============================================
--- TEST 1: Procedimiento eliminar_producto
--- =============================================
-\echo ''
-\echo '🧪 TEST 1: Eliminar Producto'
-
--- Test 1.1: Eliminar producto existente
-\echo 'Test 1.1: Eliminar producto existente (ID 1)'
-DO $$
-DECLARE
-    mensaje TEXT;
-BEGIN
-    CALL eliminar_producto(1, mensaje);
-    RAISE NOTICE 'Resultado: %', mensaje;
-END $$;
-
--- Test 1.2: Intentar eliminar producto inexistente
-\echo 'Test 1.2: Intentar eliminar producto inexistente (ID 999)'
-DO $$
-DECLARE
-    mensaje TEXT;
-BEGIN
-    CALL eliminar_producto(999, mensaje);
-    RAISE NOTICE 'Resultado: %', mensaje;
-END $$;
-
--- Verificar estado después de las eliminaciones
-\echo 'Estado de productos después de TEST 1:'
-SELECT id, nombre, precio FROM productos ORDER BY id;
-
--- =============================================
--- TEST 2: Procedimiento aumentar_precios_porcentaje
--- =============================================
-\echo ''
-\echo '🧪 TEST 2: Aumentar Precios'
-
--- Test 2.1: Aumento del 10%
-\echo 'Test 2.1: Aumento del 10%'
-DO $$
-BEGIN
-    CALL aumentar_precios_porcentaje(10);
-END $$;
-
--- Test 2.2: Intentar aumento con porcentaje negativo
-\echo 'Test 2.2: Intentar aumento con porcentaje negativo (-5%)'
-DO $$
-BEGIN
-    CALL aumentar_precios_porcentaje(-5);
-END $$;
-
--- Test 2.3: Aumento del 5%
-\echo 'Test 2.3: Aumento del 5%'
-DO $$
-BEGIN
-    CALL aumentar_precios_porcentaje(5);
-END $$;
-
--- Verificar precios después del TEST 2
-\echo 'Precios después de TEST 2:'
-SELECT nombre, precio FROM productos ORDER BY precio;
-
--- =============================================
--- TEST 3: Procedimiento obtener_productos_por_rango_precio
--- =============================================
-\echo ''
-\echo '🧪 TEST 3: Rango de Precios'
-
--- Test 3.1: Rango válido (150 - 2000)
-\echo 'Test 3.1: Rango válido (150 - 2000)'
-DO $$
-DECLARE
-    cur REFCURSOR;
-    producto_record RECORD;
-    contador INT := 0;
-BEGIN
-    CALL obtener_productos_por_rango_precio(150, 2000, cur);
+def test_eliminar_producto():
+    conn = psycopg2.connect(
+        dbname='test_db',
+        user='postgres',
+        password='postgres',
+        host='localhost',
+        port='5432'
+    )
+    cur = conn.cursor()
+    cur.execute("CALL eliminar_producto(3);")
     
-    RAISE NOTICE 'Productos en el rango 150-2000:';
-    LOOP
-        FETCH cur INTO producto_record;
-        EXIT WHEN NOT FOUND;
-        contador := contador + 1;
-        RAISE NOTICE '- %: % (Precio: %)', producto_record.id, producto_record.nombre, producto_record.precio;
-    END LOOP;
+    assert len(conn.notices) == 1
+    assert "Producto eliminado" in conn.notices[0]
+
+    cur.execute("SELECT COUNT(*) FROM productos WHERE id = 3;")
+    count = cur.fetchone()[0]
+    assert count == 0
+
+def test_eliminar_producto_no_encontrado():
+    conn = psycopg2.connect(
+        dbname='test_db',
+        user='postgres',
+        password='postgres',
+        host='localhost',
+        port='5432'
+    )
+    cur = conn.cursor()
+
+    cur.execute("CALL eliminar_producto(999);")
+
+    assert len(conn.notices) == 1
+    assert "Producto no encontrado" in conn.notices[0]
+
+
+def test_aumentar_precios():
+    conn = psycopg2.connect(
+        dbname='test_db',
+        user='postgres',
+        password='postgres',
+        host='localhost',
+        port='5432'
+    )
+    cur = conn.cursor()
+  
+    cur.execute("CALL aumentar_precios(10.0);")
+    cur.execute("SELECT precio FROM productos WHERE id = 2;")
+
+    precio_monitor = cur.fetchone()[0]
+    assert precio_monitor == Decimal('274.45')
+
+    cur.execute("SELECT precio FROM productos WHERE id = 10;")
+    precio_mochila = cur.fetchone()[0]
+    assert precio_mochila == Decimal('49.72')
+
+def test_buscar_por_rango():
+    conn = psycopg2.connect(
+        dbname='test_db',
+        user='postgres',
+        password='postgres',
+        host='localhost',
+        port='5432'
+    )
+    cur = conn.cursor()
+
+    cur.execute("CALL buscar_por_rango(50.00, 100.00);")
+    cur.execute("SELECT nombre FROM resultados_productos ORDER BY nombre;")
     
-    IF contador = 0 THEN
-        RAISE NOTICE 'No se encontraron productos en este rango.';
-    ELSE
-        RAISE NOTICE 'Total encontrados: %', contador;
-    END IF;
+    resultados = cur.fetchall()
+    nombres = [row[0] for row in resultados]
     
-    CLOSE cur;
-END $$;
+    assert len(nombres) == 3
+    assert "Teclado Mecánico Keychron" in nombres
+    assert "Mouse Logitech MX Master 3" in nombres
+    assert "Disco Duro Externo 1TB" in nombres
 
--- Test 3.2: Rango inválido (mínimo > máximo)
-\echo 'Test 3.2: Rango inválido (1000 > 100)'
-DO $$
-DECLARE
-    cur REFCURSOR;
-BEGIN
-    CALL obtener_productos_por_rango_precio(1000, 100, cur);
-END $$;
+def test_actualizar_producto_y_auditoria():
+    conn = psycopg2.connect(
+        dbname='test_db',
+        user='postgres',
+        password='postgres',
+        host='localhost',
+        port='5432'
+    )
+    cur = conn.cursor()
 
--- Test 3.3: Rango con precios negativos
-\echo 'Test 3.3: Rango con precios negativos'
-DO $$
-DECLARE
-    cur REFCURSOR;
-BEGIN
-    CALL obtener_productos_por_rango_precio(-100, 500, cur);
-END $$;
-
--- =============================================
--- TEST 4: Procedimiento actualizar_producto_con_auditoria
--- =============================================
-\echo ''
-\echo '🧪 TEST 4: Auditoría de Productos'
-
--- Verificar estado inicial antes del TEST 4
-\echo 'Estado inicial antes de TEST 4:'
-SELECT id, nombre, precio FROM productos ORDER BY id;
-
-\echo 'Registros de auditoría antes de TEST 4:'
-SELECT * FROM auditoria_productos ORDER BY fecha_cambio;
-
--- Test 4.1: Actualización exitosa con cambio de precio
-\echo 'Test 4.1: Actualización con cambio de precio (ID 2)'
-DO $$
-BEGIN
-    CALL actualizar_producto_con_auditoria(2, 'Mouse Gamer Pro', 250.00);
-END $$;
-
--- Test 4.2: Actualización con precio inválido
-\echo 'Test 4.2: Actualización con precio inválido (ID 3)'
-DO $$
-BEGIN
-    CALL actualizar_producto_con_auditoria(3, 'Monitor', -500.00);
-END $$;
-
--- Test 4.3: Actualización de producto inexistente
-\echo 'Test 4.3: Actualización de producto inexistente (ID 999)'
-DO $$
-BEGIN
-    CALL actualizar_producto_con_auditoria(999, 'Producto Fake', 100.00);
-END $$;
-
--- Test 4.4: Actualización solo de nombre (mismo precio)
-\echo 'Test 4.4: Actualización solo de nombre (mismo precio - ID 4)'
-DO $$
-BEGIN
-    CALL actualizar_producto_con_auditoria(4, 'CPU Gamer', 2500.75);
-END $$;
-
--- Verificar estado final del TEST 4
-\echo 'Estado final después de TEST 4:'
-SELECT id, nombre, precio FROM productos ORDER BY id;
-
-\echo 'Registros de auditoría generados en TEST 4:'
-SELECT * FROM auditoria_productos ORDER BY fecha_cambio;
-
--- =============================================
--- TEST 5: Pruebas adicionales y casos edge
--- =============================================
-\echo ''
-\echo '🧪 TEST 5: Pruebas Adicionales'
-
--- Test 5.1: Aumento del 0% (no debería cambiar nada)
-\echo 'Test 5.1: Aumento del 0%'
-DO $$
-BEGIN
-    CALL aumentar_precios_porcentaje(0);
-END $$;
-
--- Test 5.2: Rango extremo (precios muy altos)
-\echo 'Test 5.2: Rango extremo (5000 - 10000)'
-DO $$
-DECLARE
-    cur REFCURSOR;
-    producto_record RECORD;
-    contador INT := 0;
-BEGIN
-    CALL obtener_productos_por_rango_precio(5000, 10000, cur);
+    nuevo_nombre = "Mouse Logitech Pro"
+    nuevo_precio = Decimal('115.50')
     
-    RAISE NOTICE 'Productos en rango 5000-10000:';
-    LOOP
-        FETCH cur INTO producto_record;
-        EXIT WHEN NOT FOUND;
-        contador := contador + 1;
-        RAISE NOTICE '- %', producto_record.nombre;
-    END LOOP;
+    cur.execute("CALL actualizar_producto(4, %s, %s);", (nuevo_nombre, nuevo_precio))
+
+    cur.execute("SELECT nombre, precio FROM productos WHERE id = 4;")
+    producto = cur.fetchone()
+    assert producto[0] == nuevo_nombre
+    assert producto[1] == nuevo_precio
+
+    cur.execute("SELECT * FROM productos_auditoria;")
+    logs = cur.fetchall()
     
-    IF contador = 0 THEN
-        RAISE NOTICE 'No hay productos en este rango (esperado).';
-    END IF;
+    assert len(logs) == 1
     
-    CLOSE cur;
-END $$;
+    log = logs[0]
 
--- =============================================
--- RESUMEN FINAL
--- =============================================
-\echo ''
-\echo '=== RESUMEN FINAL ==='
-
-\echo 'Productos finales en la base de datos:'
-SELECT 
-    id,
-    nombre,
-    precio,
-    CASE 
-        WHEN precio > 2000 THEN 'ALTO'
-        WHEN precio > 500 THEN 'MEDIO'
-        ELSE 'BAJO'
-    END as categoria_precio
-FROM productos 
-ORDER BY precio DESC;
-
-\echo 'Total de registros de auditoría:'
-SELECT 
-    COUNT(*) as total_auditorias,
-    COUNT(DISTINCT producto_id) as productos_auditados
-FROM auditoria_productos;
-
-\echo 'Resumen de cambios de precio auditados:'
-SELECT 
-    producto_id,
-    COUNT(*) as cambios,
-    MIN(precio_anterior) as precio_min_anterior,
-    MAX(precio_nuevo) as precio_max_nuevo
-FROM auditoria_productos 
-GROUP BY producto_id 
-ORDER BY producto_id;
-
-\echo '=== TODOS LOS TESTS COMPLETADOS ==='
+    assert log[1] == 4 
+    assert log[2] == 'Mouse Logitech MX Master 3'
+    assert log[3] == Decimal('99.90')
+    assert log[4] == nuevo_nombre
+    assert log[5] == nuevo_precio 
