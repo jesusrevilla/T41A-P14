@@ -1,5 +1,5 @@
 CREATE TABLE productos(
   id SERIAL PRIMARY KEY,
   nombre TEXT,
-  precio NUMERIC
+  precio NUMERIC(10,2)
 );
