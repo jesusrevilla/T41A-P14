@@ -1,15 +1,18 @@
-CREATE TABLE IF NOT EXISTS productos (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    precio NUMERIC(10,2) NOT NULL,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE productos(
+  id serial,
+  nombre text,
+  precio numeric(10,2)
 );
 
-CREATE TABLE IF NOT EXISTS auditoria_productos (
-    id SERIAL PRIMARY KEY,
-    producto_id INT,
+
+
+CREATE TABLE productos_auditoria (
+    id_auditoria SERIAL PRIMARY KEY,
+    id_producto INT,
+    nombre_anterior TEXT,
     precio_anterior NUMERIC(10,2),
+    nombre_nuevo TEXT,
     precio_nuevo NUMERIC(10,2),
-    fecha_cambio TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usuario VARCHAR(100) DEFAULT CURRENT_USER
+    usuario_db TEXT DEFAULT current_user,
+    fecha_cambio TIMESTAMP DEFAULT now()
 );
