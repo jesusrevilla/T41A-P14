@@ -34,6 +34,21 @@ def test_database_procedures_execution():
         assert precio_mouse == precio_esperado_mouse, \
             f"Precio de 'Mouse' incorrecto. Esperado: {precio_esperado_mouse}, Obtenido: {precio_mouse}"
 
+        cur.execute("CALL productos_por_rango(%s, %s, 'micursor');", (100, 500))
+        
+        cur.execute('FETCH ALL FROM "micursor";')
+        
+        resultados_rango = cur.fetchall()
+
+        assert len(resultados_rango) == 4, f"Se esperaban 4 productos en el rango, pero se obtuvieron {len(resultados_rango)}."
+
+        nombres_productos = [row[1] for row in resultados_rango]
+        
+        nombres_esperados = ['Router', 'Disco Duro', 'Silla', 'Monitor']
+        
+        assert nombres_productos == nombres_esperados, \
+            f"Los productos devueltos o su orden no son correctos. Esperado: {nombres_esperados}, Obtenido: {nombres_productos}"
+
     finally:
         if conn:
             cur.close()
