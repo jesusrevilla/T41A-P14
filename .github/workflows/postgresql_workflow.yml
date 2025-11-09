@@ -31,62 +31,29 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.9'
+        python-version: '3.X'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest psycopg2-binary
-
-    - name: Install PostgreSQL client
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y postgresql-client
+        pip install -r requirements.txt
 
     - name: Wait for PostgreSQL
       run: |
-        for i in {1..30}; do
-          if PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT 1;" >/dev/null 2>&1; then
-            echo "✅ PostgreSQL is ready!"
-            exit 0
-          fi
-          echo "⏳ Waiting for PostgreSQL... ($i/30)"
-          sleep 2
-        done
-        echo "❌ PostgreSQL failed to start"
-        exit 1
+        sleep 10
 
-    - name: Create tables
+    - name: database
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 01_CreateTables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+    
+    - name: data
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql
 
-    - name: Insert data
+    - name: create 
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 02_InsertData.sql
-
-    - name: Create procedures
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_procedures.sql
+    
+    - name: Run tests
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -v ON_ERROR_STOP=1 -f 03_ejercicios.sql
-
-    - name: Run PostgreSQL tests
-      run: |
-        echo "🧪 Starting comprehensive tests..."
-        # Renombrar temporalmente el archivo .py a .sql para la ejecución
-        if [ -f "test_01_Completo.py" ]; then
-          cp test_01_Completo.py test_01_Completo.sql
-          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f test_01_Completo.sql
-          rm test_01_Completo.sql
-        else
-          echo "❌ Test file not found!"
-          exit 1
-        fi
-
-    - name: Final verification
-      run: |
-        echo "📊 Final database state:"
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "
-          SELECT 'Products' as table_name, count(*) as count FROM productos
-          UNION ALL
-          SELECT 'Audit records', count(*) FROM auditoria_productos;"
-        
-        echo "✅ All tests completed successfully!"
+        pytest
