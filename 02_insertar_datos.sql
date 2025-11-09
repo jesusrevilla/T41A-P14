@@ -7,8 +7,8 @@ BEGIN
 END;
 $$;
 
-CALL insertar_producto('Teclado', 199.99);
-CALL insertar_producto('Raton', 99.99);
-CALL insertar_producto('Caja', 9.99);
-CALL insertar_producto('Monitor', 299.99);
-CALL insertar_producto('CPU', 499.99);
+CALL insertar_producto('Laptop', 15000.00);
+CALL insertar_producto('Mouse', 350.00);
+CALL insertar_producto('Teclado', 700.00);
+CALL insertar_producto('Monitor', 4200.00);
+CALL insertar_producto('USB', 200.00);
