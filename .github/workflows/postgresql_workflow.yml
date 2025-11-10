@@ -41,19 +41,22 @@ jobs:
     - name: Wait for PostgreSQL
       run: |
         sleep 10
+    - name: 01 Create Table
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/01_create_table.sql
 
-    - name: Set up database schema and data
+    - name: 02 Insert Data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/02_insert_data.sql    
 
-    - name: Insert data
+    - name: 03 Eliminar Producto
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/03_eliminar_producto.sql        
+    
+    - name: 04 Aumentar Precios
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/04_aumentar_precios.sql
 
-    - name: Create views
+    - name: 05 Obtener Productos Rango
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
-        
-    - name: Run tests
-      run: |
-        pytest
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ${{ github.workspace }}/05_obtener_productos_rango.sql
