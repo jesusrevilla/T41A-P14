@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 def test_borrar_producto(db_connection):
     with db_connection.cursor() as cur:
         cur.execute("SELECT COUNT(*) FROM catalogo_productos WHERE producto_id = 1;")
@@ -30,3 +32,4 @@ def test_listar_productos_por_precio(db_connection):
 
         assert "Mouse" in nombres
         assert "Auriculares" in nombres
+
