@@ -49,10 +49,6 @@ jobs:
     - name: Insert data
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
-
-    - name: Create views
-      run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
         
     - name: Run tests
       run: |
