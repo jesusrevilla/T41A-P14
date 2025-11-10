@@ -1,11 +1,7 @@
-CREATE TABLE productos(
-  id SERIAL PRIMARY KEY,
-  nombre TEXT,
-  precio NUMERIC
-);
+DROP TABLE IF EXISTS productos;
 
-CREATE TABLE auditoria(
-  id SERIAL PRIMARY KEY,
-  tabla TEXT,
-  tiempo_mod TIMESTAMP
+CREATE TABLE productos (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT,
+    precio NUMERIC(10, 2)
 );
