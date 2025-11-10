@@ -3,14 +3,14 @@ name: Pruebas PostgreSQL
 on:
   push:
     paths:
-      - sql/**
-      - tests/**
-      - .github/workflows/postgresql_workflow.yml
+      - "*.sql"
+      - "test/**"
+      - "workflows/postgresql_workflow.yml"
   pull_request:
     paths:
-      - sql/**
-      - tests/**
-      - .github/workflows/postgresql_workflow.yml
+      - "*.sql"
+      - "test/**"
+      - "workflows/postgresql_workflow.yml"
   workflow_dispatch:
 
 jobs:
@@ -46,17 +46,15 @@ jobs:
 
       - name: Crear estructura de base de datos
         run: |
-          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f sql/01_create_tables.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
 
       - name: Insertar datos de prueba
         run: |
-          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f sql/02_insert_data.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql
 
       - name: Cargar procedimientos
         run: |
-          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f sql/03_create_views.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql
 
       - name: Ejecutar pruebas
-        run: pytest tests/
-
-
+        run: pytest test/
