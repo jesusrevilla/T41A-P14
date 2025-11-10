@@ -1,5 +1,5 @@
 -- ============================================
--- CREACIÓN DE TABLA
+-- ELIMINAR Y CREAR TABLA PRODUCTOS
 -- ============================================
 DROP TABLE IF EXISTS productos CASCADE;
 
