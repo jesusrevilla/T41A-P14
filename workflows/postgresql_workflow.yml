@@ -6,6 +6,11 @@ on:
       - sql/**
       - tests/**
       - .github/workflows/postgresql_workflow.yml
+  pull_request:
+    paths:
+      - sql/**
+      - tests/**
+      - .github/workflows/postgresql_workflow.yml
   workflow_dispatch:
 
 jobs:
