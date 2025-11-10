@@ -46,7 +46,7 @@ jobs:
 
       - name: Crear estructura de base de datos
         run: |
-          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f sql/01_create_tablas.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f sql/01_create_tables.sql
 
       - name: Insertar datos de prueba
         run: |
@@ -58,3 +58,4 @@ jobs:
 
       - name: Ejecutar pruebas
         run: pytest tests/
+
