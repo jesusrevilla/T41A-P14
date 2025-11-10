@@ -1,3 +1,7 @@
+import pytest
+import psycopg2
+from pytest import approx
+
 DROP TABLE IF EXISTS productos CASCADE;
 
 CREATE TABLE productos (
