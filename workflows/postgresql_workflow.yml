@@ -54,8 +54,9 @@ jobs:
 
       - name: Cargar procedimientos
         run: |
-          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f sql/03_procedimientos.sql
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f sql/03_create_views.sql
 
       - name: Ejecutar pruebas
         run: pytest tests/
+
 
