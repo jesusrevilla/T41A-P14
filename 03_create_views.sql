@@ -1,14 +1,14 @@
 -- Elimina un producto por id
-CREATE OR REPLACE PROCEDURE borrar_producto(IN producto_id INT)
+CREATE OR REPLACE PROCEDURE borrar_producto(IN p_producto_id INT)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    DELETE FROM catalogo_productos WHERE producto_id = producto_id;
+    DELETE FROM catalogo_productos WHERE producto_id = p_producto_id;
 
     IF FOUND THEN
-        RAISE NOTICE 'Producto eliminado: ID %', producto_id;
+        RAISE NOTICE 'Producto eliminado: ID %', p_producto_id;
     ELSE
-        RAISE NOTICE 'Producto no encontrado: ID %', producto_id;
+        RAISE NOTICE 'Producto no encontrado: ID %', p_producto_id;
     END IF;
 END;
 $$;
@@ -31,7 +31,7 @@ BEGIN
         SET precio_unitario = precio_unitario * factor
         WHERE producto_id = item.producto_id;
 
-        RAISE NOTICE 'Porcentaje actualizado, el nuevo precio es: %',
+        RAISE NOTICE 'Producto: %, nuevo precio: %', 
             item.nombre_producto, item.precio_unitario * factor;
     END LOOP;
 
