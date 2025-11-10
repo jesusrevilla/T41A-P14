@@ -1,0 +1,60 @@
+name: Pruebas PostgreSQL
+
+on:
+  push:
+    paths:
+      - "*.sql"
+      - "test/**"
+      - "workflows/postgresql_workflow.yml"
+  pull_request:
+    paths:
+      - "*.sql"
+      - "test/**"
+      - "workflows/postgresql_workflow.yml"
+  workflow_dispatch:
+
+jobs:
+  pruebas-postgres:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Crear estructura de base de datos
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+
+      - name: Insertar datos de prueba
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql
+
+      - name: Cargar procedimientos
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql
+
+      - name: Ejecutar pruebas
+        run: pytest test/
