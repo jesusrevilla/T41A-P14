@@ -28,27 +28,31 @@ jobs:
           --health-retries 5
 
     steps:
-    # Paso 1: Configurar Python
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+      # Paso 1: Checkout del código fuente
+      - name: Checkout repository
+        uses: actions/checkout@v3  # Esto es necesario para que GitHub Actions descargue tu código
 
-    # Paso 2: Instalar dependencias
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      # Paso 2: Configurar Python
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
 
-    # Paso 3: Esperar a que la base de datos esté lista (esperamos un poco más)
-    - name: Wait for PostgreSQL to be ready
-      run: |
-        until pg_isready -h localhost -U postgres; do
-          echo "Waiting for database to be ready..."
-          sleep 1
-        done
+      # Paso 3: Instalar dependencias
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Instalar las dependencias de requirements.txt
 
-    # Paso 4: Ejecutar las pruebas con pytest
-    - name: Run tests with pytest
-      run: |
-        pytest --maxfail=1 --disable-warnings -v
+      # Paso 4: Esperar a que la base de datos esté lista
+      - name: Wait for PostgreSQL to be ready
+        run: |
+          until pg_isready -h localhost -U postgres; do
+            echo "Waiting for database to be ready..."
+            sleep 1
+          done
+
+      # Paso 5: Ejecutar las pruebas con pytest
+      - name: Run tests with pytest
+        run: |
+          pytest --maxfail=1 --disable-warnings -v
