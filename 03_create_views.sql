@@ -11,17 +11,17 @@ BEGIN
     RAISE NOTICE 'Ingresa porcentaje mayor a cero';
     RETURN;
   END IF;
-
+  
   aumento :=1.0+(p_porcentaje/100.0);
   UPDATE productos
   SET precio=precio*aumento;
-
+  
   IF FOUND THEN
     RAISE NOTICE 'Se actualizaron los precios';
   ELSE
     RAISE NOTICE 'No se actualizaron por que no hay datos';
   END IF;
-
+  
 END;
 $$;
 
@@ -35,7 +35,7 @@ AS $$
 BEGIN
     DELETE FROM productos
     WHERE Id = p_Id;
-
+    
     IF FOUND THEN
       RAISE NOTICE 'Producto eliminado';
     END IF;
