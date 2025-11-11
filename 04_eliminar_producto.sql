@@ -7,7 +7,7 @@ AS $$
 BEGIN
     DELETE FROM productos
     WHERE Id = p_Id;
-
+    
     IF FOUND THEN
       RAISE NOTICE 'Producto eliminado';
     END IF;
