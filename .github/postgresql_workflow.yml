@@ -31,7 +31,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.X'
+        python-version: '3.x'
 
     - name: Install dependencies
       run: |
@@ -39,21 +39,31 @@ jobs:
         pip install -r requirements.txt
 
     - name: Wait for PostgreSQL
-      run: |
-        sleep 10
+      run: sleep 10
 
     - name: Set up database schema and data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_Createtables.sql
 
     - name: Insert data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_Insert_data.sql      
 
-    - name: Create views
+    - name: Run delete script
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
-        
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_Eliminar.sql  
+
+    - name: Run increase price script
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_Aumentar_precios.sql
+
+    - name: Run update product script
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_Actualizar_producto.sql
+
+    - name: Run range script
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_Rango.sql
+
     - name: Run tests
-      run: |
-        pytest
+      run: pytest
