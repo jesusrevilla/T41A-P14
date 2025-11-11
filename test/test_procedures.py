@@ -1,14 +1,18 @@
 import pytest
 import psycopg2
 import os
-from dotenv import load_dotenv
 from pytest import approx # Para comparar números decimales
 
 
 # --- Fixture de Base de Datos (con Rollback) ---
 # Esta es la parte clave para probar procedimientos de escritura
-
-load_dotenv()
+DB_CONFIG = {
+    "dbname": "test_db",
+    "user": "postgres",
+    "password": "postgres",
+    "host": "localhost",
+    "port": 5432
+}
 
 @pytest.fixture(scope="function")
 def db_cursor():
@@ -25,13 +29,7 @@ def db_cursor():
     cursor = None
     try:
         # Leemos las credenciales del .env (gracias a load_dotenv)
-        conn = psycopg2.connect(
-            dbname=os.environ.get("DB_NAME"),
-            user=os.environ.get("DB_USER"),
-            password=os.environ.get("DB_PASS"),
-            host=os.environ.get("DB_HOST"),
-            port=os.environ.get("DB_PORT", 5432)
-        )
+        conn = psycopg2.connect(**DB_CONFIG)
         
         # Desactivamos autocommit para controlar la transacción
         conn.autocommit = False 
@@ -59,7 +57,7 @@ def test_eliminar_producto_exitoso(db_cursor):
     
     # 1. ARRANGE
     db_cursor.execute(
-        "INSERT INTO productos (nombre_producto, precio) VALUES (%s, %s) RETURNING id",
+        "INSERT INTO productos (nombre, precio) VALUES (%s, %s) RETURNING id",
         ('Producto para Borrar', 99.99)
     )
     producto_id_prueba = db_cursor.fetchone()[0]
@@ -102,7 +100,7 @@ def test_actualizar_precio_producto(db_cursor):
     # 1. ARRANGE
     # Insertamos un producto con un precio conocido (ej. 100.00)
     db_cursor.execute(
-        "INSERT INTO productos (nombre_producto, precio) VALUES (%s, %s) RETURNING id",
+        "INSERT INTO productos (nombre, precio) VALUES (%s, %s) RETURNING id",
         ('Producto para Actualizar', 100.00)
     )
     producto_id_prueba = db_cursor.fetchone()[0]
@@ -110,8 +108,8 @@ def test_actualizar_precio_producto(db_cursor):
     # 2. ACT
     # Llamamos al procedure para aumentar el precio en 10% (0.10)
     # Tu procedure suma 1 + 0.10
-    porcentaje_aumento = 0.10 
-    db_cursor.execute("CALL actualizar_precio_producto(%s, %s);", (producto_id_prueba, porcentaje_aumento))
+    porcentaje_aumento = 10 
+    db_cursor.execute("CALL actualizar_precio_por_porcentaje(%s);", (porcentaje_aumento,))
 
     # 3. ASSERT
     # Verificamos que el nuevo precio sea 110.00
@@ -123,3 +121,27 @@ def test_actualizar_precio_producto(db_cursor):
     # Usamos pytest.approx para manejar la comparación de números decimales (floats)
     # 100.00 * (1 + 0.10) = 110.00
     assert nuevo_precio == approx(110.00)
+
+# --- Prueba para 'sp_mostrar_productos_por_rango' (El que usa RAISE NOTICE) ---
+
+def test_sp_mostrar_productos_por_rango_no_falla(db_cursor):
+    # 1. ARRANGE
+    db_cursor.execute(
+        """
+        INSERT INTO productos (nombre, precio) VALUES
+        ('Test Rango A', 10.00),
+        ('Test Rango B', 50.00);
+        """
+    )
+    
+    try:
+        # 2. ACT
+        # Llamamos al procedure
+        db_cursor.execute("CALL sp_mostrar_productos_por_rango(%s, %s);", (40.00, 60.00))
+        
+        # 3. ASSERT
+        # Si llegamos aquí sin un error de psycopg2, el procedure "funcionó"
+        assert True
+        
+    except Exception as e:
+        pytest.fail(f"El procedure 'sp_mostrar_productos_por_rango' falló al ejecutarse: {e}")
