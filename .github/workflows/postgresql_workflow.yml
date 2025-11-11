@@ -5,12 +5,12 @@ on:
     paths:
       - "*.sql"
       - "test/**"
-      - "workflows/postgresql_workflow.yml"
+      - ".github/workflows/postgresql_workflow.yml"
   pull_request:
     paths:
       - "*.sql"
       - "test/**"
-      - "workflows/postgresql_workflow.yml"
+      - ".github/workflows/postgresql_workflow.yml"
   workflow_dispatch:
 
 jobs:
