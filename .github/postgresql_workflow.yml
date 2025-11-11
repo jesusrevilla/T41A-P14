@@ -46,11 +46,11 @@ jobs:
         echo "Mostrando archivos actuales del repositorio:"
         ls -la
 
-    - name: Set up database schema and data
-      run: |
-        echo "Ejecutando script: 01_Createtables.sql"
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_Createtables.sql
-
+   - name: Set up database schema and data
+  run: |
+    echo "Ejecutando script: 01_Createtables.sql"
+    PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_Createtables.sql
+    
     - name: Insert data
       run: |
         echo "Ejecutando script: 02_Insert_data.sql"
