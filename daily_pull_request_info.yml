@@ -33,4 +33,3 @@ jobs:
           echo "Status: $status"
           echo "-------------------------"
         done
-        
