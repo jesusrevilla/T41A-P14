@@ -104,7 +104,6 @@ $$;
 1. Crear un procedimiento que elimine un producto por su ID y devuelva un mensaje indicando si fue exitoso o no.
 2. Crear un procedimiento que recorra todos los productos y aumente su precio en un porcentaje dado.
 3. Crear un procedimiento que reciba un rango de precios y devuelva los productos dentro de ese rango.
-4. Modificar un procedimiento para registrar en una tabla de auditoría cada vez que se actualiza un producto.
 
 ---
 
