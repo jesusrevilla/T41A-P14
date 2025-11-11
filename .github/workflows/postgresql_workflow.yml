@@ -1,5 +1,3 @@
- line change
-@@ -0,0 +1,59 @@
 name: Run PostgreSQL Tests
 
 on:
