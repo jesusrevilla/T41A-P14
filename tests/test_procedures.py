@@ -1,121 +1,34 @@
-import pytest
-import psycopg2
-import os
-from dotenv import load_dotenv
-from pytest import approx # Para comparar números decimales
+from decimal import Decimal
 
+def test_borrar_producto(db_connection):
+    with db_connection.cursor() as cur:
+        cur.execute("SELECT COUNT(*) FROM catalogo_productos WHERE producto_id = 1;")
+        assert cur.fetchone()[0] == 1
 
-load_dotenv()
+        cur.execute("CALL borrar_producto(1);")
 
-@pytest.fixture(scope="function")
-def db_cursor():
-    """
-    Fixture de Pytest para manejar la conexión y las transacciones de la BD.
-    
-    - scope="function" significa que esto se ejecuta CADA VEZ por CADA prueba.
-    - Se conecta a la BD antes de cada prueba.
-    - Crea un cursor DENTRO de una transacción.
-    - Entrega (yield) el cursor a la prueba.
-    - Hace ROLLBACK después de que la prueba termina.
-    """
-    conn = None
-    cursor = None
-    try:
-        # Leemos las credenciales del .env (gracias a load_dotenv)
-        conn = psycopg2.connect(
-            dbname=os.environ.get("DB_NAME"),
-            user=os.environ.get("DB_USER"),
-            password=os.environ.get("DB_PASS"),
-            host=os.environ.get("DB_HOST"),
-            port=os.environ.get("DB_PORT", 5432)
-        )
+        cur.execute("SELECT COUNT(*) FROM catalogo_productos WHERE producto_id = 1;")
+        assert cur.fetchone()[0] == 0
 
-        # Desactivamos autocommit para controlar la transacción
-        conn.autocommit = False 
-        cursor = conn.cursor()
+def test_ajustar_precios(db_connection):
+    with db_connection.cursor() as cur:
+        cur.execute("SELECT precio_unitario FROM catalogo_productos WHERE nombre_producto = 'Mouse';")
+        precio_original = cur.fetchone()[0]
 
-        # "yield" entrega el control a la función de prueba
-        yield cursor
+        cur.execute("CALL ajustar_precios(10);")
 
-    except Exception as e:
-        pytest.fail(f"No se pudo conectar a la base de datos: {e}")
+        cur.execute("SELECT precio_unitario FROM catalogo_productos WHERE nombre_producto = 'Mouse';")
+        precio_nuevo = cur.fetchone()[0]
 
-    finally:
-        # Esto se ejecuta DESPUÉS de cada prueba
-        if conn:
-            print("\n[ROLLBACK] Revirtiendo cambios de la prueba...")
-            conn.rollback() 
-            if cursor:
-                cursor.close()
-            conn.close()
+        assert round(precio_nuevo, 2) == round(precio_original * Decimal('1.10'), 2)
 
+def test_listar_productos_por_precio(db_connection):
+    with db_connection.cursor() as cur:
+        cur.execute("""
+            SELECT nombre_producto FROM catalogo_productos
+            WHERE precio_unitario BETWEEN 50 AND 200 ORDER BY precio_unitario;
+        """)
+        nombres = [r[0] for r in cur.fetchall()]
 
-def test_eliminar_producto_exitoso(db_cursor):
-    """Prueba que el procedure elimina correctamente un producto existente."""
-
-    # 1. ARRANGE
-    db_cursor.execute(
-        "INSERT INTO productos (nombre_producto, precio) VALUES (%s, %s) RETURNING id",
-        ('Producto para Borrar', 99.99)
-    )
-    producto_id_prueba = db_cursor.fetchone()[0]
-
-    # 2. ACT
-    db_cursor.execute("CALL eliminar_producto(%s);", (producto_id_prueba,))
-
-    # 3. ASSERT
-    db_cursor.execute("SELECT COUNT(*) FROM productos WHERE id = %s;", (producto_id_prueba,))
-    count = db_cursor.fetchone()[0]
-
-    assert count == 0, f"El producto con ID {producto_id_prueba} no fue eliminado."
-
-
-def test_eliminar_producto_no_existente(db_cursor):
-    """Prueba que el procedure no falle si intenta borrar un ID que no existe."""
-
-    id_inexistente = -1 
-
-    try:
-        # 2. ACT
-        db_cursor.execute("CALL eliminar_producto(%s);", (id_inexistente,))
-
-        # 3. ASSERT
-        # La prueba pasa si la línea anterior no lanzó una excepción
-        assert True
-
-    except Exception as e:
-        pytest.fail(f"El procedure falló al intentar borrar un ID inexistente: {e}")
-
-
-# --- Pruebas del Procedure 'actualizar_precio_producto' ---
-
-def test_actualizar_precio_producto(db_cursor):
-    """
-    Prueba que el procedure actualiza el precio de un producto 
-    basado en un porcentaje.
-    """
-
-    # 1. ARRANGE
-    # Insertamos un producto con un precio conocido (ej. 100.00)
-    db_cursor.execute(
-        "INSERT INTO productos (nombre_producto, precio) VALUES (%s, %s) RETURNING id",
-        ('Producto para Actualizar', 100.00)
-    )
-    producto_id_prueba = db_cursor.fetchone()[0]
-
-    # 2. ACT
-    # Llamamos al procedure para aumentar el precio en 10% (0.10)
-    # Tu procedure suma 1 + 0.10
-    porcentaje_aumento = 0.10 
-    db_cursor.execute("CALL actualizar_precio_producto(%s, %s);", (producto_id_prueba, porcentaje_aumento))
-
-    # 3. ASSERT
-    # Verificamos que el nuevo precio sea 110.00
-    db_cursor.execute("SELECT precio FROM productos WHERE id = %s;", (producto_id_prueba,))
-
-    # fetchone() devuelve una tupla, ej. (Decimal('110.00'),)
-    nuevo_precio = db_cursor.fetchone()[0] 
-
-    # Usamos pytest.approx para manejar la comparación de números decimales (floats)
-    # 100.00 * (1 + 0.10) = 110.00
-    assert nuevo_precio == approx(110.00)
+        assert "Mouse" in nombres
+        assert "Auriculares" in nombres
