@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:14
@@ -41,27 +42,25 @@ jobs:
     - name: Wait for PostgreSQL
       run: sleep 10
 
-    - name: Check working directory and files
+    - name: Check current directory and files
       run: |
-        echo "Current directory:"
+        echo "Working directory:"
         pwd
-        echo "Contents of current directory:"
+        echo "Files in repository root:"
         ls -la
-        echo "Contents of parent directory:"
-        ls -la ..
 
     - name: Set up database schema and data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../01_create_tables.sql
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
 
     - name: Run additional SQL scripts
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../03_delete_procedure_data.sql
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../04_procedure_increase_prices.sql
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../05_procedure_products_in_range.sql
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../06_procedure_audit_update.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_delete_procedure_data.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_procedure_increase_prices.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_procedure_products_in_range.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_procedure_audit_update.sql
 
-    # 🧪 Ejecutar las pruebas de Python
+    # 🧪 Ejecutar pruebas automáticas
     - name: Run tests
       run: pytest
