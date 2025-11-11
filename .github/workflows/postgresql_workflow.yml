@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:14
@@ -31,7 +32,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.X'
+        python-version: '3.x'
 
     - name: Install dependencies
       run: |
@@ -39,21 +40,27 @@ jobs:
         pip install -r requirements.txt
 
     - name: Wait for PostgreSQL
+      run: sleep 10
+
+    - name: Check current directory and files
       run: |
-        sleep 10
+        echo "Working directory:"
+        pwd
+        echo "Files in repository root:"
+        ls -la
 
     - name: Set up database schema and data
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
-
-    - name: Insert data
-      run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
 
-    - name: Create views
+    - name: Run additional SQL scripts
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
-        
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_delete_procedure_data.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_procedure_increase_prices.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_procedure_products_in_range.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_procedure_audit_update.sql
+
+    # 🧪 Ejecutar pruebas automáticas
     - name: Run tests
-      run: |
-        pytest
+      run: pytest
