@@ -44,8 +44,17 @@ jobs:
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
     - name: Insert data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql
+    - name: 03 delete id
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_delete_id.sql
+    - name: 04 increase percentage
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_increase_percentage.sql
+    - name: 05 range
+      run: |
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_range.sql
     
     - name: Run tests
       run: |
-        pytest -vv
+        pytest
