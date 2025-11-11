@@ -46,35 +46,35 @@ jobs:
         echo "Mostrando archivos actuales del repositorio:"
         ls -la
 
-   - name: Set up database schema and data
-  run: |
-    echo "Ejecutando script: 01_Createtables.sql"
-    PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_Createtables.sql
-    
+    - name: Set up database schema and data
+      run: |
+        echo "Ejecutando script: 01_create_tables.sql"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+
     - name: Insert data
       run: |
-        echo "Ejecutando script: 02_Insert_data.sql"
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_Insert_data.sql      
+        echo "Ejecutando script: 02_insert_data.sql"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
 
     - name: Run delete script
       run: |
-        echo "Ejecutando script: 03_Eliminar.sql"
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_Eliminar.sql  
+        echo "Ejecutando script: 03_eliminar.sql"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_eliminar.sql  
 
     - name: Run increase price script
       run: |
-        echo "Ejecutando script: 04_Aumentar_precios.sql"
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_Aumentar_precios.sql
+        echo "Ejecutando script: 04_aumentar_precios.sql"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_aumentar_precios.sql
 
     - name: Run update product script
       run: |
-        echo "Ejecutando script: 05_Actualizar_producto.sql"
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_Actualizar_producto.sql
+        echo "Ejecutando script: 05_actualizar_producto.sql"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_actualizar_producto.sql
 
     - name: Run range script
       run: |
-        echo "Ejecutando script: 06_Rango.sql"
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_Rango.sql
+        echo "Ejecutando script: 06_rango.sql"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_rango.sql
 
     - name: Run tests
       run: |
