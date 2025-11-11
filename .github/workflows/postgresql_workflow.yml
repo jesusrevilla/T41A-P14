@@ -31,7 +31,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.X'
+        python-version: '3.x'
 
     - name: Install dependencies
       run: |
@@ -39,21 +39,29 @@ jobs:
         pip install -r requirements.txt
 
     - name: Wait for PostgreSQL
+      run: sleep 10
+
+    - name: Check working directory and files
       run: |
-        sleep 10
+        echo "Current directory:"
+        pwd
+        echo "Contents of current directory:"
+        ls -la
+        echo "Contents of parent directory:"
+        ls -la ..
 
     - name: Set up database schema and data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../01_create_tables.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../02_insert_data.sql      
 
-    - name: Insert data
+    - name: Run additional SQL scripts
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../03_delete_procedure_data.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../04_procedure_increase_prices.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../05_procedure_products_in_range.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f ../06_procedure_audit_update.sql
 
-    - name: Create views
-      run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
-        
+    # 🧪 Ejecutar las pruebas de Python
     - name: Run tests
-      run: |
-        pytest
+      run: pytest
