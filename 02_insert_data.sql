@@ -1,9 +1,9 @@
-CREATE PROCEDURE insertar_registro(nombre TEXT, stock INT, precio_unitario NUMERIC)
+CREATE PROCEDURE insertar_registro(nombre TEXT, stock INT, precio NUMERIC)
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  INSERT INTO productos(nombre, stock, precio_unitario)
-  VALUES (nombre, stock, precio_unitario);
+  INSERT INTO productos(nombre, stock, precio)
+  VALUES (nombre, stock, precio);
 END;
 $$;
 
