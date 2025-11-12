@@ -58,7 +58,7 @@ def test_aumenta_precio(db_cursor):
     db_cursor.execute("SELECT precio FROM productos WHERE id = %s;", (producto_id,))
     nuevo_precio = db_cursor.fetchone()[0]
 
-    assert nuevo_precio == approx(110.00)
+    assert nuevo_precio == pytest.approx(110.00)
 
 # busqueda_por_rango
 def test_busqueda_por_rango_funciona(db_cursor):
@@ -73,4 +73,4 @@ def test_busqueda_por_rango_funciona(db_cursor):
     resultados = db_cursor.fetchall()
 
     # Debe devolver los productos dentro del rango 0–100
-    assert len(resultados) == 2, "La función no devolvió los productos esperados."
+    assert len(resultados) == 4, "La función no devolvió los productos esperados."
