@@ -1,6 +1,6 @@
 INSERT INTO productos (nombre, precio) VALUES
-('Bocinas', 450.00),
-('Telefono', 1899.99),
-('Monitor', 4750.00),
-('Computadora', 18,9999.00),
-('Audífonos', 899.90);
+('Laptop', 1499.99),
+('Monitor', 249.50),
+('Mouse ', 99.90),
+('Audífonos', 348.00),
+('Disco Duro Externo', 59.99),
