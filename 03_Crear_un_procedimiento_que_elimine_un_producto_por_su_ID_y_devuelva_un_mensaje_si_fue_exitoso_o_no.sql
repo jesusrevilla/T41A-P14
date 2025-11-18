@@ -16,4 +16,4 @@ END;
 $$;
 
 -- Ejemplo de llamada:
--- CALL eliminar_producto(2);
+CALL eliminar_producto(2);
