@@ -1,5 +1,4 @@
 name: Run PostgreSQL Procedures Tests
-
 on:
   push:
     branches: [ "main" ]
