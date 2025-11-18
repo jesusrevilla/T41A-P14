@@ -1,4 +1,4 @@
-name: Run PostgreSQL Tests
+name: Run PostgreSQL Procedures Tests
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.X'
+        python-version: '3.9'
 
     - name: Install dependencies
       run: |
@@ -40,20 +40,22 @@ jobs:
 
     - name: Wait for PostgreSQL
       run: |
-        sleep 10
+        sleep 15
 
-    - name: Set up database schema and data
+    - name: Create tables
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
 
-    - name: Insert data
+    - name: Insert test data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql
 
-    - name: Create views
+    - name: Create stored procedures
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
-        
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_procedure_increase_prices.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_procedure_products_in_range.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_procedure_audit_update.sql
+
     - name: Run tests
       run: |
-        pytest
+        pytest -v
