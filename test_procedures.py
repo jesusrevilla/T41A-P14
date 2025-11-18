@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """
-Tests simples para los procedimientos almacenados de PostgreSQL
+Tests para los procedimientos almacenados de PostgreSQL
 """
 
 import psycopg2
 import sys
+import time
+from decimal import Decimal
 
 # Configuración de la base de datos
 DB_CONFIG = {
@@ -14,6 +16,24 @@ DB_CONFIG = {
     'password': 'postgres',
     'port': 5432
 }
+
+def wait_for_postgres():
+    """Esperar a que PostgreSQL esté listo"""
+    max_attempts = 10
+    for i in range(max_attempts):
+        try:
+            conn = psycopg2.connect(**DB_CONFIG)
+            conn.close()
+            print(" PostgreSQL está listo")
+            return True
+        except psycopg2.OperationalError:
+            if i < max_attempts - 1:
+                print(f" Esperando a PostgreSQL... (intento {i+1}/{max_attempts})")
+                time.sleep(2)
+            else:
+                print(" No se pudo conectar a PostgreSQL después de varios intentos")
+                return False
+    return False
 
 def test_connection():
     """Test de conexión a la base de datos"""
@@ -25,10 +45,58 @@ def test_connection():
         cur.close()
         conn.close()
         assert result[0] == 1
-        print(" Test de conexión: PASS")
+        print("Test de conexión: PASS")
         return True
     except Exception as e:
         print(f" Test de conexión: FAIL - {e}")
+        return False
+
+def test_tables_exist():
+    """Verificar que las tablas existen"""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        
+        cur.execute("""
+            SELECT table_name 
+            FROM information_schema.tables 
+            WHERE table_schema = 'public'
+            AND table_name IN ('productos', 'audit_productos')
+        """)
+        tables = cur.fetchall()
+        table_names = [table[0] for table in tables]
+        
+        assert 'productos' in table_names
+        assert 'audit_productos' in table_names
+        
+        print(" Test de tablas: PASS")
+        print(f"   Tablas encontradas: {table_names}")
+        
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f" Test de tablas: FAIL - {e}")
+        return False
+
+def test_data_inserted():
+    """Verificar que los datos fueron insertados"""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        
+        cur.execute("SELECT COUNT(*) FROM productos")
+        count = cur.fetchone()[0]
+        
+        assert count > 0, "No hay datos en la tabla productos"
+        
+        print(f" Test de datos: PASS - {count} productos insertados")
+        
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f" Test de datos: FAIL - {e}")
         return False
 
 def test_increase_prices():
@@ -49,13 +117,15 @@ def test_increase_prices():
         cur.execute("SELECT precio FROM productos WHERE nombre = 'Laptop Gaming'")
         precio_nuevo = cur.fetchone()[0]
         
-        aumento_esperado = precio_original * 1.10
-        diferencia = abs(precio_nuevo - aumento_esperado)
+        # CORRECCIÓN: Usar Decimal en lugar de float
+        aumento_esperado = precio_original * Decimal('1.10')
+        diferencia = abs(float(precio_nuevo) - float(aumento_esperado))
         
         assert diferencia < 0.01, f"Diferencia muy grande: {diferencia}"
-        print(f" Test increase_product_prices: PASS")
+        print(f"Test increase_product_prices: PASS")
         print(f"   Precio original: ${precio_original:.2f}")
         print(f"   Precio nuevo: ${precio_nuevo:.2f}")
+        print(f"   Aumento esperado: ${aumento_esperado:.2f}")
         
         cur.close()
         conn.close()
@@ -120,7 +190,8 @@ def test_audit_trigger():
         
         print(f" Test audit_trigger: PASS")
         print(f"   Registros de auditoría: {count_despues}")
-        print(f"   Último registro: {audit_record}")
+        if audit_record:
+            print(f"   Último registro: Producto {audit_record[1]} - Acción: {audit_record[2]}")
         
         cur.close()
         conn.close()
@@ -134,8 +205,14 @@ def main():
     """Función principal que ejecuta todos los tests"""
     print(" Iniciando tests de procedimientos PostgreSQL...\n")
     
+    # Primero esperar a que PostgreSQL esté listo
+    if not wait_for_postgres():
+        sys.exit(1)
+    
     tests = [
         test_connection,
+        test_tables_exist,
+        test_data_inserted,
         test_increase_prices,
         test_products_in_range,
         test_audit_trigger
@@ -155,10 +232,10 @@ def main():
     print(f" RESULTADOS:")
     print(f"    PASS: {passed}")
     print(f"    FAIL: {failed}")
-    print(f"   TOTAL: {passed + failed}")
+    print(f"    TOTAL: {passed + failed}")
     
     if failed == 0:
-        print("¡Todos los tests pasaron!")
+        print(" ¡Todos los tests pasaron!")
         sys.exit(0)
     else:
         print(" Algunos tests fallaron")
