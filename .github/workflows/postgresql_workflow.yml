@@ -1,4 +1,4 @@
-name: Run PostgreSQL Tests
+name: Run PostgreSQL Procedures Tests
 
 on:
   push:
@@ -31,7 +31,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.X'
+        python-version: '3.9'
 
     - name: Install dependencies
       run: |
@@ -40,20 +40,42 @@ jobs:
 
     - name: Wait for PostgreSQL
       run: |
-        sleep 10
+        echo "Esperando a que PostgreSQL esté listo..."
+        until pg_isready -h localhost -p 5432; do
+          sleep 2
+        done
+        echo "PostgreSQL está listo!"
 
-    - name: Set up database schema and data
+    - name: Create tables
       run: |
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 01_create_tables.sql
 
-    - name: Insert data
+    - name: Insert test data
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql      
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 02_insert_data.sql
 
-    - name: Create views
+    - name: Create stored procedures
       run: |
-        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 03_create_views.sql          
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 04_procedure_increase_prices.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_procedure_products_in_range.sql
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_procedure_audit_update.sql
+
+    - name: List files (para debug)
+      run: |
+        ls -la
+
+    - name: Run Python tests
+      run: |
+        python test_procedures.py  # esta
+
+    - name: Test procedures manually (backup)
+      run: |
+        # Probar el procedimiento de aumento de precios
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "CALL increase_product_prices(10);"
         
-    - name: Run tests
-      run: |
-        pytest
+        # Probar el procedimiento de rango de precios
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "CALL get_products_in_price_range(100, 500, 0, '');"
+        
+        # Probar el trigger de auditoría
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "UPDATE productos SET precio = 1300.00 WHERE nombre = 'Laptop Gaming';"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT COUNT(*) as registros_auditoria FROM audit_productos;"
