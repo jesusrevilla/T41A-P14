@@ -12,4 +12,4 @@ END;
 $$;
 
 -- Ejemplo de llamada:
--- CALL aumentar_precio(10);
+CALL aumentar_precio(10);
