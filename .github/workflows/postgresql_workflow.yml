@@ -73,4 +73,4 @@ jobs:
 
     - name: Run simple Python tests
       run: |
-        python test_simple.py
+        python test_procedures.py
