@@ -40,7 +40,10 @@ jobs:
 
     - name: Wait for PostgreSQL
       run: |
-        sleep 15
+        until pg_isready -h localhost -p 5432; do
+          echo "Waiting for PostgreSQL..."
+          sleep 2
+        done
 
     - name: Create tables
       run: |
@@ -56,6 +59,18 @@ jobs:
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 05_procedure_products_in_range.sql
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -f 06_procedure_audit_update.sql
 
-    - name: Run tests
+    - name: Test procedures manually
       run: |
-        pytest -v
+        # Probar el procedimiento de aumento de precios
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "CALL increase_product_prices(10);"
+        
+        # Probar el procedimiento de rango de precios
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "CALL get_products_in_price_range(100, 500, 0, '');"
+        
+        # Probar el trigger de auditoría
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "UPDATE productos SET precio = 1300.00 WHERE nombre = 'Laptop Gaming';"
+        PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT * FROM audit_productos;"
+
+    - name: Run simple Python tests
+      run: |
+        python test_simple.py
