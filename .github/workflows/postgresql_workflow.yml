@@ -71,6 +71,6 @@ jobs:
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "UPDATE productos SET precio = 1300.00 WHERE nombre = 'Laptop Gaming';"
         PGPASSWORD=postgres psql -h localhost -U postgres -d test_db -c "SELECT * FROM audit_productos;"
 
-    - name: Run simple Python tests
+    - name: Run  Python tests
       run: |
         python test_procedures.py
